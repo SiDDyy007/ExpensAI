@@ -4,14 +4,13 @@ import json
 from dotenv import load_dotenv
 import os
 
-reader = PdfReader('statements/ZOLVE.pdf')
-# reader = PdfReader('AMEX.pdf')
+
 load_dotenv()
 password = os.getenv("PASSWORD")
 
-if reader.is_encrypted:
-    reader.decrypt(password)
-print("Number of pages:", len(reader.pages))
+# if reader.is_encrypted:
+#     reader.decrypt(password)
+# print("Number of pages:", len(reader.pages))
 
 def getAMEX(reader):
     charges = ""
@@ -65,7 +64,7 @@ def extract_charges(reader, card_type):
         raise ValueError("Unsupported card type")
     # print(charges)
     matches = re.findall(pattern, charges, re.DOTALL)
-    print(matches)
+    # print(matches)
     charges_list = []
     for match in matches:
         if card_type == "AMEX":
@@ -83,9 +82,22 @@ def extract_charges(reader, card_type):
             }
         charges_list.append(charge)
 
-    charges_json = json.dumps(charges_list, indent=4)
+    # charges_json = json.dumps(charges_list, indent=4)
+    return charges_list
+
+def getExpenseJSON(reader = None, card_type = 'ZOLVE'):
+    reader = PdfReader('statements/ZOLVE.pdf')
+    # reader = PdfReader('AMEX.pdf')
+    if reader.is_encrypted:
+        reader.decrypt(password)
+
+    if card_type == "AMEX":
+        charges_json = extract_charges(reader, card_type="AMEX")
+    elif card_type == "ZOLVE":
+        charges_json = extract_charges(reader, card_type="ZOLVE")
+    else:
+        raise ValueError("Unsupported card type")
     return charges_json
 
-
-charges_json = extract_charges(reader, card_type="ZOLVE")
-print(charges_json)
+# charges_json = extract_charges(reader, card_type="ZOLVE")
+# print(charges_json)
