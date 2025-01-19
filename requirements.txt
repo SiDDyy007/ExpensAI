@@ -1,0 +1,26 @@
+# Core Dependencies
+anthropic
+pinecone-client
+langchain-anthropic
+smolagents
+python-dotenv
+
+# PDF Processing
+pdfplumber
+
+# Data Processing
+pandas
+numpy
+
+# Google Sheets Integration
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+gspread
+
+# Date Processing
+python-dateutil
+
+# Utilities
+typing-extensions
+pathlib
