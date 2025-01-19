@@ -240,7 +240,7 @@ def get_monthly_transactions(date_str: str) -> list:
         logger.error(f"Error getting monthly transactions: {e}")
         return []
     
-def exponential_backoff(func, max_retries=5, base_delay=1):
+def exponential_backoff(func, max_retries=5, base_delay=10):
     """Exponential backoff algorithm for retrying a function."""
     for attempt in range(max_retries):
         try:
