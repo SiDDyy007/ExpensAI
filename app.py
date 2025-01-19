@@ -15,7 +15,6 @@ from typing import List, Dict, Any, Optional
 import os
 
 from smolagents import CodeAgent, LiteLLMModel, tool
-from dotenv import load_dotenv
 
 # Import ExpensAI modules
 from config.base import config
@@ -108,7 +107,7 @@ class ExpenseAI:
                 else:
                     logger.warning(f"No transactions extracted from {statement.name}")
 
-                return transactions # Un tab this TODO
+            return transactions 
 
         except Exception as e:
             logger.error(f"Error processing statements: {e}")
@@ -127,7 +126,7 @@ class ExpenseAI:
         try:
             analyzed_transactions = []
             
-            for transaction in transactions[:2]:
+            for transaction in transactions:
                 # Define the transaction analysis prompt
                 analysis_prompt = (
                     f"Can you analyze this transaction: {transaction}?\n\n"
@@ -135,7 +134,8 @@ class ExpenseAI:
                     "on the transaction for future use (only if needed).\n\n"
                     "Craft a concise description to include with the transaction JSON object for future reference.\n\n"
                     "Also include the category of the transaction from [Housing, Grocery, Fun, Investment, Miscellaneous].\n\n"
-                    "The output must strictly be a JSON object of the following structure:\n"
+                    "The output must strictly be a Python dictionary object, not a string representation, "
+                    "and follow this structure:\n"
                     "{\n"
                     '    "amount": <<amount>>,\n'
                     '    "merchant": <<merchant>>,\n'
