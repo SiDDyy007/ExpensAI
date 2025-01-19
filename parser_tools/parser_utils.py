@@ -4,7 +4,6 @@ from typing import TypedDict, List, Optional
 from datetime import datetime
 import re
 import logging
-from config.base import config
 
 # Configure logging
 logger = logging.getLogger(__name__)

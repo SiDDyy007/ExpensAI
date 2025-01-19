@@ -18,7 +18,6 @@ from smolagents import CodeAgent, LiteLLMModel, tool
 
 # Import ExpensAI modules
 from config.base import config
-from config.utils import setup_logging
 from parser_tools.statement_parser_tools import parse_amex_statement, parse_zolve_statement, parse_freedom_statement
 from analysis.anomaly_detector import analyze_transaction, get_human_feedback
 from storage.vector import upsert_transactions, store_monthly_summary, search_historical_summaries
@@ -107,7 +106,7 @@ class ExpenseAI:
                 else:
                     logger.warning(f"No transactions extracted from {statement.name}")
 
-            return transactions 
+            return transactions[:5]
 
         except Exception as e:
             logger.error(f"Error processing statements: {e}")
