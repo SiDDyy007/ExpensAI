@@ -20,7 +20,7 @@ from smolagents import CodeAgent, LiteLLMModel, tool
 from config.base import config
 from config.utils import setup_logging
 from parser_tools.statement_parser_tools import parse_amex_statement, parse_zolve_statement, parse_freedom_statement
-from anomaly.anomaly_detector import analyze_transaction, get_human_feedback
+from analysis.anomaly_detector import analyze_transaction, get_human_feedback
 from storage.vector import upsert_transactions, store_monthly_summary, search_historical_summaries
 from storage.sheets import update_expense_sheet, get_monthly_transactions
 
@@ -98,12 +98,12 @@ class ExpenseAI:
             for statement in statement_path.glob("*.pdf"):
                 logger.info(f"Processing statement: {statement.name}")
                 response = self.extraction_agent.run(
-                    f"Could you get me a JSON of my expenses from {statement}?"
+                    f"Extract my expenses from {statement} and return **only** a JSON object containing details of each charge, with no additional text or explanation."
                 )
 
                 if response:
                     transactions.extend(response)
-                    logger.info(f"Extracted {len(response)} transactions from {statement.name}")
+                    logger.info(f"Extracted transactions from {statement.name}")
                 else:
                     logger.warning(f"No transactions extracted from {statement.name}")
 
