@@ -3,13 +3,13 @@
 ExpensAI is a sophisticated multi-agent system designed to revolutionize how you manage and understand your credit card expenses. Using advanced LLM-powered agents, it automatically processes your statements, detects spending patterns, identifies anomalies, and maintains organized records in Google Sheets - all while learning from your feedback to become more personalized over time.
 
 <p align="center">
-  <img src="/images/ExpensAI_Logo.png" alt="ExpensAI Logo">
+  <img src="/images/ExpensAI_Logo.png" alt="ExpensAI Logo" style="max-width: 100%; height: auto;">
 </p>
 
 ## 🏗️ Architecture
 
 <p align="center">
-  [Architecture Diagram SVG is displayed here]
+  <img src="images/ExpensAI_Architecture_Diagram.svg" alt="ExpensAI Architecture" style="max-width: 100%; height: auto;">
 </p>
 
 ExpensAI uses a multi-agent architecture where each agent specializes in a specific task:
@@ -176,10 +176,6 @@ expensai/
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
