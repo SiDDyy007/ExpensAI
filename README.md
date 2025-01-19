@@ -38,7 +38,7 @@ The system uses two primary storage components:
 
 ## 🎥 Demo
 
-[Coming Soon] Watch ExpensAI in action as it processes statements, identifies patterns, and organizes your expenses.
+![Demo](images/output.gif)
 
 ## ✨ Key Features
 
