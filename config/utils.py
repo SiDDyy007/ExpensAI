@@ -1,50 +1,7 @@
 import logging
 import logging.config
-from typing import Optional
 from pathlib import Path
-import json
 from config.base import Config, ConfigurationError
-
-def setup_logging(log_file: Optional[str] = None, log_level: str = "INFO") -> None:
-    """
-    Set up logging configuration for the application.
-    
-    Args:
-        log_file: Optional path to log file
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    """
-    log_config = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "standard": {
-                "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-            },
-        },
-        "handlers": {
-            "console": {
-                "class": "logging.StreamHandler",
-                "formatter": "standard",
-                "stream": "ext://sys.stdout"
-            },
-        },
-        "loggers": {
-            "": {  # root logger
-                "handlers": ["console"],
-                "level": log_level,
-            }
-        }
-    }
-
-    if log_file:
-        log_config["handlers"]["file"] = {
-            "class": "logging.FileHandler",
-            "filename": log_file,
-            "formatter": "standard"
-        }
-        log_config["loggers"][""]["handlers"].append("file")
-
-    logging.config.dictConfig(log_config)
 
 def load_config(env_file: str = ".env") -> Config:
     """
@@ -77,13 +34,3 @@ def save_config_template() -> None:
     if not env_path.exists() and template_path.exists():
         template_path.copy(env_path)
         logging.info("Created .env file from template")
-
-def print_config(config: Config) -> None:
-    """
-    Print current configuration (with sensitive values masked).
-    
-    Args:
-        config: Configuration object to print
-    """
-    config_dict = config.to_dict()
-    print(json.dumps(config_dict, indent=2))

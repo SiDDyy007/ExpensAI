@@ -64,15 +64,15 @@ class Config:
         self._init_config()
         self.validate()
         logger.info("Configuration loaded successfully")
+        print("ExpensAI Configuration loaded successfully")
 
     def _load_environment(self, env_file: str) -> None:
         """Load environment variables from .env file."""
         env_path = Path(env_file)
         if env_path.exists():
             load_dotenv(env_path)
-            logger.info(f"Loaded environment from {env_file}")
         else:
-            logger.warning(f"Environment file {env_file} not found, using system environment variables")
+            raise ConfigurationError(f"Environment file {env_file} not found")
 
     def _init_config(self) -> None:
         """Initialize configuration objects from environment variables."""
@@ -137,35 +137,9 @@ class Config:
         except Exception as e:
             raise ConfigurationError(f"Configuration validation failed: {str(e)}")
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert configuration to dictionary format."""
-        return {
-            "api": {
-                "anthropic_api_key": "***masked***",
-                "pinecone_api_key": "***masked***"
-            },
-            "sheets": {
-                "spreadsheet_name": self.sheets.spreadsheet_name,
-                "service_account_file": self.sheets.service_account_file,
-                "scopes": self.sheets.scopes
-            },
-            "pinecone": {
-                "environment": self.pinecone.environment,
-                "index_name": self.pinecone.index_name,
-                "namespace_categories": self.pinecone.namespace_categories
-            },
-            "llm": {
-                "model": self.llm.model,
-                "temperature": self.llm.temperature,
-                "max_tokens": self.llm.max_tokens,
-                "timeout": self.llm.timeout,
-                "max_retries": self.llm.max_retries
-            }
-        }
-
 # Create a global configuration instance
 try:
     config = Config()
 except ConfigurationError as e:
-    logger.error(f"Failed to load configuration: {str(e)}")
+    print(f"Failed to load configuration: {str(e)}")
     raise
