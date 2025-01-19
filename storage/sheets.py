@@ -33,10 +33,10 @@ def get_sheet_name(transaction_date: str) -> str:
         transaction_date: Transaction date string in any parsable format.
 
     Returns:
-        str: Formatted sheet name in the form 'MONTH YYYY'_TEST.
+        str: Formatted sheet name in the form 'MONTH YYYY'.
     """
     date_obj = parse(transaction_date)
-    sheet_name = date_obj.strftime("%B %y'").upper() + "_TEST"
+    sheet_name = date_obj.strftime("%B %y'").upper()
     return sheet_name
 
 def get_or_create_sheet(spreadsheet, sheet_name) -> gspread.Worksheet:
