@@ -62,7 +62,32 @@ def get_or_create_sheet(spreadsheet, sheet_name) -> gspread.Worksheet:
                 "Method of Payment", "Type of Expense", "Notes",
                 "", "Cards", "Total Expense"
             ]
-            worksheet.insert_row(headers, index=1)
+            worksheet.update('A1:I1', [headers])
+            # worksheet.insert_row(headers, index=1)
+
+            # Apply text wrapping to all columns
+            wrap_request = {
+                'requests': [{
+                    'updateCells': {
+                        'range': {
+                            'sheetId': worksheet._properties['sheetId'],
+                            'startRowIndex': 0,
+                            'endRowIndex': 200,  # Apply to all rows
+                            'startColumnIndex': 0,
+                            'endColumnIndex': 10  
+                        },
+                        'rows': [{
+                            'values': [{
+                                'userEnteredFormat': {
+                                    'wrapStrategy': 'WRAP'
+                                }
+                            } for _ in range(len(headers))]  # One for each column
+                        }],
+                        'fields': 'userEnteredFormat.wrapStrategy'
+                    }
+                }]
+            }
+            spreadsheet.batch_update(wrap_request)
             logger.info(f"Created new sheet: {sheet_name}")
 
         return worksheet
@@ -184,8 +209,7 @@ def update_expense_sheet(transactions: list) -> bool:
 
                     # Add row to sheet
                     empty_row_index = len(sheet.get_all_values()) + 1
-                    for index, value in enumerate(row, start=1):
-                        sheet.update_cell(empty_row_index, index, value)
+                    sheet.insert_row(row, empty_row_index)
 
                     logger.info(f"Added transaction to sheet: {sheet.title}")
 
