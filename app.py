@@ -78,38 +78,55 @@ class ExpenseAI:
         except Exception as e:
             return f"Error getting input: {str(e)}"
     
-    def process_statements(self, statement_dir: str) -> List[Dict[str, Any]]:
+    def get_statements(self, statement_dir: str) -> List[Path]:
         """
-        Process credit card statements from the given directory.
+        Get a list of PDF statements from the given directory.
         
         Args:
             statement_dir: Directory containing statement PDFs
             
         Returns:
-            List of extracted transactions
+            List of Path objects for each PDF statement
         """
         try:
             statement_path = Path(statement_dir)
             if not statement_path.exists():
                 raise FileNotFoundError(f"Statement directory not found: {statement_dir}")
-
-            transactions = []
-            for statement in statement_path.glob("*.pdf"):
-                logger.info(f"Processing statement: {statement.name}")
-                response = self.extraction_agent.run(
-                    f"Extract my expenses from {statement} and return **only** a JSON object containing details of each charge, with no additional text or explanation."
-                )
-
-                if response:
-                    transactions.extend(response)
-                    logger.info(f"Extracted transactions from {statement.name}")
-                else:
-                    logger.warning(f"No transactions extracted from {statement.name}")
-
-            return transactions[:5]
-
+                
+            statements = list(statement_path.glob("*.pdf"))
+            logger.info(f"Found {len(statements)} statements in {statement_dir}")
+            return statements
+            
         except Exception as e:
-            logger.error(f"Error processing statements: {e}")
+            logger.error(f"Error getting statements: {e}")
+            raise
+
+    def process_statement(self, statement: Path) -> List[Dict[str, Any]]:
+        """
+        Process a single credit card statement and extract transactions.
+        
+        Args:
+            statement: Path object pointing to the statement PDF
+            
+        Returns:
+            List of extracted transactions from the statement
+        """
+
+        try:
+            logger.info(f"Processing statement: {statement.name}")
+            response = self.extraction_agent.run(
+                f"Extract my expenses from {statement} and return **only** a JSON object containing details of each charge, with no additional text or explanation."
+            )
+            
+            if response:
+                logger.info(f"Extracted transactions from {statement.name}")
+                return response
+            else:
+                logger.warning(f"No transactions extracted from {statement.name}")
+                return []
+                
+        except Exception as e:
+            logger.error(f"Error processing statement {statement.name}: {e}")
             raise
     
     def analyze_transactions(self, transactions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -212,24 +229,29 @@ class ExpenseAI:
         """
         try:
             logger.info("Starting ExpenseAI workflow...")
-            
-            # Process statements
-            transactions = self.process_statements(statement_dir)
-            if not transactions:
-                logger.warning("No transactions found in statements")
-                return
-            
-            # Analyze transactions
-            analyzed_transactions = self.analyze_transactions(transactions)
-            if not analyzed_transactions:
-                logger.warning("No transactions analyzed")
-                return
-            
-            print("Analyzed trasactions ", analyzed_transactions)
-            # Store transactions
-            upsert_transactions(analyzed_transactions)
-            update_expense_sheet(analyzed_transactions)
-            
+
+            statements = self.get_statements(statement_dir)
+    
+            transactions = []
+            for statement in statements:
+                statement_transactions = self.process_statement(statement)
+
+                if not statement_transactions:
+                    logger.warning(f"No transactions found in {statement.name}")
+                    continue
+
+                # Analyze transactions
+                analyzed_transactions = self.analyze_transactions(statement_transactions)
+                if not analyzed_transactions:
+                    logger.warning("No transactions analyzed")
+                    continue
+
+                # Store transactions
+                upsert_transactions(analyzed_transactions)
+                update_expense_sheet(analyzed_transactions)
+
+                transactions.extend(statement_transactions)
+                
             # Generate summary
             self.generate_summary(analyzed_transactions)
             
@@ -243,8 +265,6 @@ class ExpenseAI:
 def main():
     """Main entry point for ExpenseAI."""
     try:
-        # Setup logging
-        setup_logging(log_file="expensai.log")
         
         # Initialize ExpenseAI
         expense_ai = ExpenseAI()
