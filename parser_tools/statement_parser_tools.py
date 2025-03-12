@@ -1,11 +1,12 @@
 import pdfplumber
 import re
 from datetime import datetime
-from smolagents import tool
+# from smolagents import tool
+import json
 
 
 
-@tool
+# @tool
 def parse_amex_statement(pdf_path : str) -> dict:
     """
     This is a tool that extracts and returns a Expense JSON consisting of charges and information of each charge from a AMEX credit card bill statement.
@@ -31,7 +32,7 @@ def parse_amex_statement(pdf_path : str) -> dict:
         for page in pdf.pages:
             text = page.extract_text()
             
-            # Process each line to handle multiline transactions
+            # Process each line to handle multiline transactions``
             for line in text.split('\n'):
                 transaction = None
                 
@@ -56,9 +57,9 @@ def parse_amex_statement(pdf_path : str) -> dict:
                         transaction = {
                             "date": formatted_date,
                             "merchant": description.strip(),
-                            "amount": amount_float,
-                            "type": "PAYMENT" if pattern == patterns[1] else "CHARGE",
-                            "card" : 'AMEX'
+                            "charge": amount_float,
+                            # "type": "PAYMENT" if pattern == patterns[1] else "CHARGE",
+                            # "card" : 'AMEX'
                         }
                         break  # Exit pattern loop if we found a match
                 
@@ -67,7 +68,7 @@ def parse_amex_statement(pdf_path : str) -> dict:
       
     return transactions
 
-@tool
+# @tool
 def parse_zolve_statement(pdf_path : str) -> dict:
     """
     This is a tool that extracts and returns a Expense JSON consisting of charges and information of each charge from a ZOLVE credit card bill statement.
@@ -130,12 +131,12 @@ def parse_zolve_statement(pdf_path : str) -> dict:
                                 description = ' '.join(parts[2:-1])
                                 
                                 transaction = {
-                                    'posted_date': dates[0],
+                                    # 'posted_date': dates[0],
                                     'date': dates[1],
                                     'merchant': description,
-                                    'amount': amount * (-1 if negative_amount else 1),
-                                    'type' : "PAYMENT" if negative_amount else "CHARGE",
-                                    'card' : "ZOLVE"
+                                    'charge': amount * (-1 if negative_amount else 1),
+                                    # 'type' : "PAYMENT" if negative_amount else "CHARGE",
+                                    # 'card' : "ZOLVE"
                                 }
                                 transactions.append(transaction)
                         except (ValueError, IndexError):
@@ -148,7 +149,7 @@ def parse_zolve_statement(pdf_path : str) -> dict:
     
     return transactions
 
-@tool
+# @tool
 def parse_freedom_statement(pdf_path: str) -> dict:
     """
     This is a tool that extracts and returns a Expense JSON consisting of charges and information of each charge from a FREEDOM credit card bill statement.
@@ -210,9 +211,9 @@ def parse_freedom_statement(pdf_path: str) -> dict:
                             transaction = {
                                 'date': transaction_date,
                                 'merchant': description,
-                                'amount': amount,
-                                'type': 'PAYMENT' if amount < 0 else 'PURCHASE',
-                                'card' : 'FREEDOM'
+                                'charge': amount,
+                                # 'type': 'PAYMENT' if amount < 0 else 'PURCHASE',
+                                # 'card' : 'FREEDOM'
                             }
                             
                             transactions.append(transaction)
@@ -322,3 +323,44 @@ def parse_checking_statement(pdf_path):
         'transactions': transactions,
         'account_summary': account_summary
     }
+
+dates = ['Dec-Jan', 'Jan-Feb', 'Sep-Oct']
+total = 0
+main_data = []
+# amex_data = []
+for date in dates:
+    name = '../statements/AMEX_' + date + '.pdf'
+    data = parse_amex_statement(name)
+    print("total trasactions amex : ", len(data))
+    total += len(data)
+    # amex_data.extend(data)
+    main_data.extend([{name : data}])
+    # pretty_json = json.dumps(data, indent=4)
+    # print(pretty_json)
+
+# freedom_data = []
+for date in dates:
+    name = '../statements/FREEDOM_' + date + '.pdf'
+    data = parse_freedom_statement(name)
+    print("total freedom transactions ", len(data))
+    total += len(data)
+    main_data.extend([{name : data}])
+    # pretty_json = json.dumps(data, indent=4)
+    # print(pretty_json)
+
+# zolve_data = []
+for date in dates:
+    name = '../statements/ZOLVE_' + date + '.pdf'
+    data = parse_zolve_statement(name)
+    print("total zolve trnasactions ", len(data))
+    total += len(data)
+    main_data.extend([{name : data}])
+    # pretty_json = json.dumps(data, indent=4)
+    # print(pretty_json)
+
+# main_data.extend([{'ZOLVE' : zolve_data}])
+# main_data.extend([{'AMEX' : amex_data}])
+# main_data.extend([{'FREEDOM' : freedom_data}])
+# print(total)# Save to a JSON file
+with open("transactions_dataset.json", "w") as f:
+    json.dump(main_data, f, indent=4)  # `indent=4` makes it readable
