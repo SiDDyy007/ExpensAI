@@ -1,11 +1,11 @@
 import pdfplumber
 import re
 from datetime import datetime
-from smolagents import tool
+# from smolagents import tool
 
 
 
-@tool
+# @tool
 def parse_amex_statement(pdf_path : str) -> dict:
     """
     This is a tool that extracts and returns a Expense JSON consisting of charges and information of each charge from a AMEX credit card bill statement.
@@ -42,24 +42,32 @@ def parse_amex_statement(pdf_path : str) -> dict:
                         date_str, description, amount = match.groups()
                         
                         # Convert date to YYYY-MM-DD format
-                        try:
-                            date_obj = datetime.strptime(date_str, '%m/%d/%y')
-                            formatted_date = date_obj.strftime('%Y-%m-%d')
-                        except ValueError:
-                            continue
+                        # try:
+                        #     date_obj = datetime.strptime(date_str, '%m/%d/%y')
+                        #     formatted_date = date_obj.strftime('%Y-%m-%d')
+                        # except ValueError:
+                        #     continue
                         
                         # For payments (second pattern), make amount negative
-                        amount_float = float(amount)
-                        if pattern == patterns[1]:  # Payment pattern
-                            amount_float = -amount_float
-                        
+                        # amount_float = float(amount)
+                        # if pattern == patterns[1]:  # Payment pattern
+                        #     amount_float = -amount_float
+
                         transaction = {
-                            "date": formatted_date,
-                            "merchant": description.strip(),
-                            "amount": amount_float,
-                            "type": "PAYMENT" if pattern == patterns[1] else "CHARGE",
-                            "card" : 'AMEX'
+                            "Date": date_str,
+                            "Merchant": description.strip(),
+                            "Charge": amount,
+                            # "type": "PAYMENT" if pattern == patterns[1] else "CHARGE",
+                            # "card" : 'AMEX'
                         }
+                        
+                        # transaction = {
+                        #     "Date": formatted_date,
+                        #     "Merchant": description.strip(),
+                        #     "Charge": amount_float,
+                        #     # "type": "PAYMENT" if pattern == patterns[1] else "CHARGE",
+                        #     # "card" : 'AMEX'
+                        # }
                         break  # Exit pattern loop if we found a match
                 
                 if transaction:
@@ -67,7 +75,7 @@ def parse_amex_statement(pdf_path : str) -> dict:
       
     return transactions
 
-@tool
+# @tool
 def parse_zolve_statement(pdf_path : str) -> dict:
     """
     This is a tool that extracts and returns a Expense JSON consisting of charges and information of each charge from a ZOLVE credit card bill statement.
@@ -148,7 +156,7 @@ def parse_zolve_statement(pdf_path : str) -> dict:
     
     return transactions
 
-@tool
+# @tool
 def parse_freedom_statement(pdf_path: str) -> dict:
     """
     This is a tool that extracts and returns a Expense JSON consisting of charges and information of each charge from a FREEDOM credit card bill statement.
@@ -322,3 +330,23 @@ def parse_checking_statement(pdf_path):
         'transactions': transactions,
         'account_summary': account_summary
     }
+
+import json 
+
+main_data = []
+total = 0
+for i in range(1, 6):
+    path = f"../statements/AMEX_{i}.pdf"
+    main_path = f"AMEX_{i}.pdf"
+    data = parse_amex_statement(path)
+    print(len(data))
+    total += len(data)
+
+    main_data.extend([{main_path : data}])
+
+print(total)
+filename = "transactions_data.json"
+with open(filename, 'w') as file:
+    json.dump(main_data, file, indent=4)
+
+print(f"Data saved to {filename}")
