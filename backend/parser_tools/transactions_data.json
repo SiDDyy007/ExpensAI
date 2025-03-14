@@ -1,0 +1,747 @@
+[
+    {
+        "AMEX_1.pdf": [
+            {
+                "Date": "12/23/24",
+                "Merchant": "PAYPAL *FERNSNPETAL 9212422000 IN",
+                "Charge": "41.61"
+            },
+            {
+                "Date": "12/26/24",
+                "Merchant": "PAYPAL *DOORDASHDASHPASS 8559731040 CA",
+                "Charge": "4.99"
+            },
+            {
+                "Date": "12/26/24",
+                "Merchant": "PAYPAL *INSTACART COSTCO 8882467822 CA",
+                "Charge": "166.50"
+            },
+            {
+                "Date": "12/26/24",
+                "Merchant": "BRYANT PARK WINES 650000012563956 NEW YORK NY",
+                "Charge": "30.62"
+            },
+            {
+                "Date": "12/29/24",
+                "Merchant": "NYCT PAYGO NEW YORK NY",
+                "Charge": "2.90"
+            },
+            {
+                "Date": "12/30/24",
+                "Merchant": "CLAUDE.AI SUBSCRIPTION SAN FRANCISCO CA",
+                "Charge": "20.00"
+            },
+            {
+                "Date": "12/30/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "69.95"
+            },
+            {
+                "Date": "12/30/24",
+                "Merchant": "VARSITY LIQUORS 650000009411391 PRINCETON NJ",
+                "Charge": "34.10"
+            },
+            {
+                "Date": "12/30/24",
+                "Merchant": "THAI DELIGHT 650000012817311 PRINCETON NJ",
+                "Charge": "2.83"
+            },
+            {
+                "Date": "01/02/25",
+                "Merchant": "AMAZON.COM AMZN.COM/BILL WA",
+                "Charge": "14.22"
+            },
+            {
+                "Date": "01/02/25",
+                "Merchant": "AMAZON.COM AMZN.COM/BILL WA",
+                "Charge": "18.62"
+            },
+            {
+                "Date": "01/03/25",
+                "Merchant": "AMAZON.COM AMZN.COM/BILL WA",
+                "Charge": "42.69"
+            },
+            {
+                "Date": "01/03/25",
+                "Merchant": "AMAZON MARKETPLACE NA PA AMZN.COM/BILL WA",
+                "Charge": "33.35"
+            },
+            {
+                "Date": "01/06/25",
+                "Merchant": "AMAZON MARKETPLACE NA PA AMZN.COM/BILL WA",
+                "Charge": "47.96"
+            },
+            {
+                "Date": "01/07/25",
+                "Merchant": "PAYPAL *INSTACART COSTCO 8882467822 CA",
+                "Charge": "108.36"
+            },
+            {
+                "Date": "01/08/25",
+                "Merchant": "AMAZON MARKETPLACE NA PA AMZN.COM/BILL WA",
+                "Charge": "7.25"
+            },
+            {
+                "Date": "01/08/25",
+                "Merchant": "TMOBILE PREPD AUTOPY 877-778-2106 WA",
+                "Charge": "15.49"
+            },
+            {
+                "Date": "01/09/25",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "53.02"
+            },
+            {
+                "Date": "01/13/25",
+                "Merchant": "AMAZON.COM AMZN.COM/BILL WA",
+                "Charge": "75.79"
+            },
+            {
+                "Date": "01/14/25",
+                "Merchant": "PAYPAL *INSTACART COSTCO 8882467822 CA",
+                "Charge": "13.76"
+            },
+            {
+                "Date": "01/14/25",
+                "Merchant": "PAYPAL *INSTACART COSTCO 8882467822 CA",
+                "Charge": "42.64"
+            },
+            {
+                "Date": "01/16/25",
+                "Merchant": "AMAZON MARKETPLACE NA PA AMZN.COM/BILL WA",
+                "Charge": "28.08"
+            },
+            {
+                "Date": "01/18/25",
+                "Merchant": "PAYPAL *APPLE.COM/BILL 8002752273 CA",
+                "Charge": "1.99"
+            },
+            {
+                "Date": "01/22/25",
+                "Merchant": "PRIME VIDEO CHANNELS AMZN.COM/BILL WA",
+                "Charge": "11.73"
+            }
+        ]
+    },
+    {
+        "AMEX_2.pdf": [
+            {
+                "Date": "10/14/24",
+                "Merchant": "MOBILE PAYMENT - THANK YOU",
+                "Charge": "620.00"
+            },
+            {
+                "Date": "09/22/24",
+                "Merchant": "CHIPOTLE 2712 0000 ALLEN PARK MI",
+                "Charge": "10.39"
+            },
+            {
+                "Date": "09/22/24",
+                "Merchant": "WALT CHURCHILL'S MARKET 00000000067908 PERRYSBURG OH",
+                "Charge": "0.73"
+            },
+            {
+                "Date": "09/22/24",
+                "Merchant": "PAYPAL *STARBUCKS 8007827282 WA",
+                "Charge": "25.00"
+            },
+            {
+                "Date": "09/22/24",
+                "Merchant": "KROGER #548 000000548 PERRYSBURG OH",
+                "Charge": "33.44"
+            },
+            {
+                "Date": "09/23/24",
+                "Merchant": "ENTERPRISE RENT A CAR PERRYSBURG OH",
+                "Charge": "163.63"
+            },
+            {
+                "Date": "09/25/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "70.38"
+            },
+            {
+                "Date": "09/28/24",
+                "Merchant": "CEDAR POINT ADMISSIONS 002194111 SANDUSKY OH",
+                "Charge": "30.00"
+            },
+            {
+                "Date": "09/29/24",
+                "Merchant": "TST* OH TACO 300677148 SANDUSKY OH",
+                "Charge": "25.00"
+            },
+            {
+                "Date": "09/29/24",
+                "Merchant": "SPEEDWAY 45349 000045349 PERRYSBURG OH",
+                "Charge": "3.41"
+            },
+            {
+                "Date": "09/30/24",
+                "Merchant": "CLAUDE.AI SUBSCRIPTION SAN FRANCISCO CA",
+                "Charge": "20.00"
+            },
+            {
+                "Date": "09/30/24",
+                "Merchant": "EXXONMOBIL 9937 BELLEVILLE MI",
+                "Charge": "4.10"
+            },
+            {
+                "Date": "09/30/24",
+                "Merchant": "ENTERPRISE RENT A CAR PERRYSBURG OH",
+                "Charge": "163.63"
+            },
+            {
+                "Date": "10/04/24",
+                "Merchant": "IC* MEIJER VIA INSTACA SAN FRANCISCO CA",
+                "Charge": "50.00"
+            },
+            {
+                "Date": "10/08/24",
+                "Merchant": "TMOBILE PREPD AUTOPY 877-778-2106 WA",
+                "Charge": "15.38"
+            },
+            {
+                "Date": "10/11/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "58.99"
+            },
+            {
+                "Date": "10/12/24",
+                "Merchant": "ENTERPRISE RENT A CAR PERRYSBURG OH",
+                "Charge": "27.05"
+            },
+            {
+                "Date": "10/13/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "41.92"
+            },
+            {
+                "Date": "10/13/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "0.97"
+            },
+            {
+                "Date": "10/14/24",
+                "Merchant": "CITGO PS FOOD MART DUNDEE 00011836042 DUNDEE MI",
+                "Charge": "24.79"
+            },
+            {
+                "Date": "10/15/24",
+                "Merchant": "ENTERPRISE RENT A CAR PERRYSBURG OH",
+                "Charge": "84.74"
+            },
+            {
+                "Date": "10/18/24",
+                "Merchant": "PAYPAL *APPLE.COM/BILL 8002752273 CA",
+                "Charge": "1.99"
+            },
+            {
+                "Date": "10/20/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "48.24"
+            }
+        ]
+    },
+    {
+        "AMEX_3.pdf": [
+            {
+                "Date": "12/04/24",
+                "Merchant": "Redeem Cash Back at Amazon.com Credit",
+                "Charge": "27.72"
+            },
+            {
+                "Date": "12/04/24",
+                "Merchant": "Redeem Cash Back at Amazon.com Credit",
+                "Charge": "29.88"
+            },
+            {
+                "Date": "11/22/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "82.55"
+            },
+            {
+                "Date": "11/23/24",
+                "Merchant": "PAYPAL *DOORDASH VITOSPIZ 8559731040 CA",
+                "Charge": "20.61"
+            },
+            {
+                "Date": "11/23/24",
+                "Merchant": "PAYPAL *INSTACART COSTCO 8882467822 CA",
+                "Charge": "33.18"
+            },
+            {
+                "Date": "11/24/24",
+                "Merchant": "SWEETFISH BUBBLE TEA & POKE BOWL Perrysburg OH",
+                "Charge": "11.85"
+            },
+            {
+                "Date": "11/24/24",
+                "Merchant": "PayU*Skechers South Asia Pvt Ltd Mumbai Suburban IN 5,097.00",
+                "Charge": "60.41"
+            },
+            {
+                "Date": "11/24/24",
+                "Merchant": "TIL*IT TRUE SPICE 0000 PERRYSBURG OH",
+                "Charge": "23.95"
+            },
+            {
+                "Date": "11/26/24",
+                "Merchant": "PAYPAL *DOORDASHDASHPASS 8559731040 CA",
+                "Charge": "4.99"
+            },
+            {
+                "Date": "11/27/24",
+                "Merchant": "PayU*Myntra Bangalore IN 2,247.00",
+                "Charge": "26.68"
+            },
+            {
+                "Date": "11/27/24",
+                "Merchant": "PAYPAL *DOORDASH MEIJER 8559731040 CA",
+                "Charge": "19.01"
+            },
+            {
+                "Date": "11/28/24",
+                "Merchant": "TST* CAFE LANDWER - BOSTO 00044001 BOSTON MA",
+                "Charge": "50.00"
+            },
+            {
+                "Date": "11/29/24",
+                "Merchant": "SHAH'S HALAL FOOD - BOST 0000 BOSTON MA",
+                "Charge": "28.67"
+            },
+            {
+                "Date": "11/30/24",
+                "Merchant": "CLAUDE.AI SUBSCRIPTION SAN FRANCISCO CA",
+                "Charge": "20.00"
+            },
+            {
+                "Date": "11/30/24",
+                "Merchant": "TST* WAKU WAKU 00033435 BOSTON MA",
+                "Charge": "35.31"
+            },
+            {
+                "Date": "12/01/24",
+                "Merchant": "TST* PARIS CREPERIE 000000212 BROOKLINE MA",
+                "Charge": "27.00"
+            },
+            {
+                "Date": "12/01/24",
+                "Merchant": "GIMBEL'S LIQUORS 0000 BROOKLINE MA",
+                "Charge": "18.99"
+            },
+            {
+                "Date": "12/01/24",
+                "Merchant": "SOUP SHACK 436845558939541 BROOKLINE MA",
+                "Charge": "57.31"
+            },
+            {
+                "Date": "12/02/24",
+                "Merchant": "JAMES HOOK & CO. Boston MA",
+                "Charge": "37.18"
+            },
+            {
+                "Date": "12/02/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "40.08"
+            },
+            {
+                "Date": "12/04/24",
+                "Merchant": "AMAZON MARKETPLACE PAYMENTS AMZN.COM/BILL WA",
+                "Charge": "29.88"
+            },
+            {
+                "Date": "12/04/24",
+                "Merchant": "AMAZON.COM AMZN.COM/BILL WA",
+                "Charge": "27.72"
+            },
+            {
+                "Date": "12/04/24",
+                "Merchant": "PAYPAL *DOORDASH PIADAITA 8559731040 CA",
+                "Charge": "24.00"
+            },
+            {
+                "Date": "12/04/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "36.03"
+            },
+            {
+                "Date": "12/04/24",
+                "Merchant": "PAYPAL *DOORDASH ODDFODDE 8559731040 CA",
+                "Charge": "20.00"
+            },
+            {
+                "Date": "12/06/24",
+                "Merchant": "AMAZON MARKETPLACE NA PA AMZN.COM/BILL WA",
+                "Charge": "7.46"
+            },
+            {
+                "Date": "12/06/24",
+                "Merchant": "AMAZON MARKETPLACE NA PA AMZN.COM/BILL WA",
+                "Charge": "19.19"
+            },
+            {
+                "Date": "12/08/24",
+                "Merchant": "TMOBILE PREPD AUTOPY 877-778-2106 WA",
+                "Charge": "15.38"
+            },
+            {
+                "Date": "12/10/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "71.82"
+            },
+            {
+                "Date": "12/12/24",
+                "Merchant": "AMAZON MARKETPLACE NA PA AMZN.COM/BILL WA",
+                "Charge": "28.86"
+            },
+            {
+                "Date": "12/12/24",
+                "Merchant": "AMAZON MARKETPLACE NA PA AMZN.COM/BILL WA",
+                "Charge": "14.95"
+            },
+            {
+                "Date": "12/14/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "60.80"
+            },
+            {
+                "Date": "12/18/24",
+                "Merchant": "PAYPAL *APPLE.COM/BILL 8002752273 CA",
+                "Charge": "1.99"
+            },
+            {
+                "Date": "12/22/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "79.08"
+            },
+            {
+                "Date": "12/22/24",
+                "Merchant": "AMAZON.COM AMZN.COM/BILL WA",
+                "Charge": "14.97"
+            },
+            {
+                "Date": "11/24/24",
+                "Merchant": "FOREIGN TRANSACTION FEE**",
+                "Charge": "1.63"
+            },
+            {
+                "Date": "11/27/24",
+                "Merchant": "FOREIGN TRANSACTION FEE**",
+                "Charge": "0.72"
+            }
+        ]
+    },
+    {
+        "AMEX_4.pdf": [
+            {
+                "Date": "08/27/24",
+                "Merchant": "Redeem Cash Back at Amazon.com Credit",
+                "Charge": "23.85"
+            },
+            {
+                "Date": "08/27/24",
+                "Merchant": "Redeem Cash Back at Amazon.com Credit",
+                "Charge": "26.94"
+            },
+            {
+                "Date": "08/24/24",
+                "Merchant": "STARBUCKS STORE 0887 PERRYSBURG OH",
+                "Charge": "7.45"
+            },
+            {
+                "Date": "08/24/24",
+                "Merchant": "KROGER #548 000000548 PERRYSBURG OH",
+                "Charge": "12.80"
+            },
+            {
+                "Date": "08/25/24",
+                "Merchant": "BP#92600507 MI &I-75 PET 9260 DETROIT MI",
+                "Charge": "34.86"
+            },
+            {
+                "Date": "08/25/24",
+                "Merchant": "BURLINGTON STORES 588 588 TOLEDO OH",
+                "Charge": "26.93"
+            },
+            {
+                "Date": "08/25/24",
+                "Merchant": "KROGER CANTON MI",
+                "Charge": "4.23"
+            },
+            {
+                "Date": "08/26/24",
+                "Merchant": "ENTERPRISE RENT A CAR PERRYSBURG OH",
+                "Charge": "241.60"
+            },
+            {
+                "Date": "08/28/24",
+                "Merchant": "AMAZON.COM AMZN.COM/BILL WA",
+                "Charge": "23.85"
+            },
+            {
+                "Date": "08/28/24",
+                "Merchant": "AMAZON MARKETPLACE PAYMENTS AMZN.COM/BILL WA",
+                "Charge": "26.94"
+            },
+            {
+                "Date": "08/30/24",
+                "Merchant": "CLAUDE.AI SUBSCRIPTION SAN FRANCISCO CA",
+                "Charge": "20.00"
+            },
+            {
+                "Date": "08/30/24",
+                "Merchant": "COACH USA INC 8669126224 NY",
+                "Charge": "25.00"
+            },
+            {
+                "Date": "08/31/24",
+                "Merchant": "LYFT 855-280-0278 CA",
+                "Charge": "41.37"
+            },
+            {
+                "Date": "08/31/24",
+                "Merchant": "GREEN VALLEY ORGANIC MARK 225916683826 LONG IS CITY NY",
+                "Charge": "16.64"
+            },
+            {
+                "Date": "08/31/24",
+                "Merchant": "TST* MIZNON - CHELSEA MAR 00042909 NEW YORK NY",
+                "Charge": "39.20"
+            },
+            {
+                "Date": "08/31/24",
+                "Merchant": "PAYPAL *STARBUCKS 8007827282 WA",
+                "Charge": "15.00"
+            },
+            {
+                "Date": "09/01/24",
+                "Merchant": "TST* PARIS BAGUETTE - 145 300547642 NEW YORK NY",
+                "Charge": "5.43"
+            },
+            {
+                "Date": "09/01/24",
+                "Merchant": "LI-LAC CHOCOLATES - CHELSEA MARKET New York NY",
+                "Charge": "8.98"
+            },
+            {
+                "Date": "09/02/24",
+                "Merchant": "FIREHOUSE SUBS B22 FOOD EWR 1611115900 NEWARK NJ",
+                "Charge": "14.61"
+            },
+            {
+                "Date": "09/02/24",
+                "Merchant": "BROOKLYN BAGELS-CHELSEA 92751016000001 NEW YORK NY",
+                "Charge": "9.36"
+            },
+            {
+                "Date": "09/03/24",
+                "Merchant": "CANONICA PRI LLC 0000 NEWARK NJ",
+                "Charge": "2.00"
+            },
+            {
+                "Date": "09/03/24",
+                "Merchant": "THE NEW STAND ST2822 2822 NEWARK NJ",
+                "Charge": "9.28"
+            },
+            {
+                "Date": "09/03/24",
+                "Merchant": "TONY'S PIZZA (PZA) B22 FD EWR 16110954 NEWARK NJ",
+                "Charge": "7.78"
+            },
+            {
+                "Date": "09/06/24",
+                "Merchant": "MEIJER ROSSFORD OH",
+                "Charge": "3.99"
+            },
+            {
+                "Date": "09/07/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "25.62"
+            },
+            {
+                "Date": "09/07/24",
+                "Merchant": "PAYPAL *STARBUCKS 8007827282 WA",
+                "Charge": "15.00"
+            },
+            {
+                "Date": "09/07/24",
+                "Merchant": "ENTERPRISE RENT A CAR PERRYSBURG OH",
+                "Charge": "73.65"
+            },
+            {
+                "Date": "09/08/24",
+                "Merchant": "TMOBILE PREPD AUTOPY 877-778-2106 WA",
+                "Charge": "15.38"
+            },
+            {
+                "Date": "09/12/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "45.16"
+            },
+            {
+                "Date": "09/13/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "39.74"
+            },
+            {
+                "Date": "09/18/24",
+                "Merchant": "PAYPAL *APPLE.COM/BILL 8002752273 CA",
+                "Charge": "1.99"
+            },
+            {
+                "Date": "09/21/24",
+                "Merchant": "TST* FRENCH TOAST BISTRO- 300630703 PLYMOUTH MI",
+                "Charge": "35.00"
+            },
+            {
+                "Date": "09/21/24",
+                "Merchant": "GALLUP PARK ANN ARBOR MI",
+                "Charge": "25.00"
+            },
+            {
+                "Date": "09/21/24",
+                "Merchant": "WALT CHURCHILL'S MARKET 00000000067908 PERRYSBURG OH",
+                "Charge": "26.35"
+            }
+        ]
+    },
+    {
+        "AMEX_5.pdf": [
+            {
+                "Date": "11/15/24",
+                "Merchant": "MOBILE PAYMENT - THANK YOU",
+                "Charge": "903.05"
+            },
+            {
+                "Date": "10/23/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "46.11"
+            },
+            {
+                "Date": "10/25/24",
+                "Merchant": "FRONTIER AIRLINES AIRLINES DENVER CO",
+                "Charge": "173.98"
+            },
+            {
+                "Date": "10/26/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "49.40"
+            },
+            {
+                "Date": "10/26/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "12.62"
+            },
+            {
+                "Date": "10/26/24",
+                "Merchant": "WALT CHURCHILL'S MARKET 00000000067908 PERRYSBURG OH",
+                "Charge": "6.05"
+            },
+            {
+                "Date": "10/30/24",
+                "Merchant": "CLAUDE.AI SUBSCRIPTION SAN FRANCISCO CA",
+                "Charge": "20.00"
+            },
+            {
+                "Date": "10/30/24",
+                "Merchant": "Qamaria Allen Park Allen Park MI",
+                "Charge": "15.26"
+            },
+            {
+                "Date": "10/31/24",
+                "Merchant": "IC* INSTACART SAN FRANCISCO CA",
+                "Charge": "2.01"
+            },
+            {
+                "Date": "10/31/24",
+                "Merchant": "IC* SAMS CLU VIA INSTA SAN FRANCISCO CA",
+                "Charge": "85.52"
+            },
+            {
+                "Date": "10/31/24",
+                "Merchant": "ENTERPRISE RENT A CAR PERRYSBURG OH",
+                "Charge": "77.42"
+            },
+            {
+                "Date": "11/01/24",
+                "Merchant": "PAYPAL *INSTACART COSTCO 8882467822 CA",
+                "Charge": "66.27"
+            },
+            {
+                "Date": "11/01/24",
+                "Merchant": "PAYPAL *INSTACART COSTCO 8882467822 CA",
+                "Charge": "3.65"
+            },
+            {
+                "Date": "11/03/24",
+                "Merchant": "OFFTHERECO* OFFTHERECO BOTHELL WA",
+                "Charge": "289.00"
+            },
+            {
+                "Date": "11/08/24",
+                "Merchant": "TMOBILE PREPD AUTOPY 877-778-2106 WA",
+                "Charge": "15.38"
+            },
+            {
+                "Date": "11/08/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "99.81"
+            },
+            {
+                "Date": "11/10/24",
+                "Merchant": "TST* BAR LOUIE - PERRYSBU 300562534 PERRYSBURG OH",
+                "Charge": "36.84"
+            },
+            {
+                "Date": "11/11/24",
+                "Merchant": "SPIRIT AIRLINES SOUTH FLORIDA FL",
+                "Charge": "101.98"
+            },
+            {
+                "Date": "11/11/24",
+                "Merchant": "PAYPAL *INSTACART 8882467822 CA",
+                "Charge": "44.64"
+            },
+            {
+                "Date": "11/14/24",
+                "Merchant": "AMTRAK INT WASHINGTON DC",
+                "Charge": "91.80"
+            },
+            {
+                "Date": "11/14/24",
+                "Merchant": "AMTRAK INT WASHINGTON DC",
+                "Charge": "110.50"
+            },
+            {
+                "Date": "11/15/24",
+                "Merchant": "PAYPAL *STARBUCKS 8007827282 WA",
+                "Charge": "10.00"
+            },
+            {
+                "Date": "11/16/24",
+                "Merchant": "HONG KONG BUFFET & GRILL 5671401150162 SIDNEY OH",
+                "Charge": "35.00"
+            },
+            {
+                "Date": "11/17/24",
+                "Merchant": "PAR*CORELIFE - OH100202 000004203 MAUMEE OH",
+                "Charge": "36.20"
+            },
+            {
+                "Date": "11/17/24",
+                "Merchant": "TROPICAL SMOOTHIE CAFE OH 013 TROPICAL ROSSFORD OH",
+                "Charge": "8.79"
+            },
+            {
+                "Date": "11/18/24",
+                "Merchant": "PAYPAL *APPLE.COM/BILL 8002752273 CA",
+                "Charge": "1.99"
+            },
+            {
+                "Date": "11/18/24",
+                "Merchant": "ENTERPRISE RENT A CAR PERRYSBURG OH",
+                "Charge": "152.31"
+            }
+        ]
+    }
+]
