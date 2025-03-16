@@ -2,6 +2,16 @@
 
 ExpensAI is a sophisticated multi-agent system designed to revolutionize how you manage and understand your credit card expenses. Using advanced LLM-powered agents, it automatically processes your statements, detects spending patterns, identifies anomalies, and maintains organized records in Google Sheets - all while learning from your feedback to become more personalized over time.
 
+
+# ExpensAI v2 Coming out soon
+**Changes On the Way**
+   - User Friendly UI with Drag N Drop feature 
+   - Complete revamp of UI/UX 
+   - List transactions by Month and Year
+   - Summary tool w/ Chatbot feature to deep dive into insights
+   - More smooth experience overall
+
+
 <p align="center">
   <img src="/images/ExpensAI_Logo.png" alt="ExpensAI Logo" style="max-width: 50%; max-height: 50%;">
 </p>
