@@ -6,12 +6,19 @@ import { supabase } from './supabase';
  */
 export async function getTransactions(month, year, category = null, card = null) {
   try {
-    const tableName = `transactions_${month.toString().padStart(2, '0')}_${year}`;
+
+    const monthStr = month.toString().padStart(2, '0');
+    const yearMonthPrefix = `${year}-${monthStr}`;
     
-    // Start building the query
+
+    // Query the consolidated transactions table
     let query = supabase
-      .from(`expense_tracker.${tableName}`)
+      .from('transactions')
       .select('*')
+      .filter('date', 'gte', `${yearMonthPrefix}-01`) // Start of month
+      .filter('date', 'lt', month === 12 
+        ? `${year + 1}-01-01`  // Next year if December
+        : `${year}-${(month + 1).toString().padStart(2, '0')}-01`) // Next month
       .order('date', { ascending: false });
     
     // Add filters if provided
@@ -40,7 +47,7 @@ export async function getTransactions(month, year, category = null, card = null)
 export async function getMonthlySummary(month, year) {
   try {
     const { data, error } = await supabase
-      .from('expense_tracker.monthly_summaries')
+      .from('monthly_summaries')
       .select('*')
       .eq('month', month)
       .eq('year', year)
@@ -50,6 +57,7 @@ export async function getMonthlySummary(month, year) {
       throw error;
     }
     
+    // Return data or a default summary object if none exists
     return data || {
       month,
       year,
@@ -68,15 +76,16 @@ export async function getMonthlySummary(month, year) {
 /**
  * Update transaction category and note
  */
-export async function updateTransactionCategory(transactionId, tableName, category, note = null) {
+export async function updateTransactionCategory(transactionId, category, note = null) {
   try {
     const updateData = { category };
     if (note !== null) {
       updateData.note = note;
     }
     
+    // Update in the consolidated transactions table
     const { data, error } = await supabase
-      .from(`expense_tracker.${tableName}`)
+      .from('transactions')
       .update(updateData)
       .eq('id', transactionId)
       .select()
@@ -91,5 +100,158 @@ export async function updateTransactionCategory(transactionId, tableName, catego
   }
 }
 
+/**
+ * Search transactions across any time period
+ */
+export async function searchTransactions(searchTerm, startDate = null, endDate = null) {
+  try {
+    let query = supabase
+      .from('transactions')
+      .select('*');
+    
+    // Full-text search on merchant and note fields
+    if (searchTerm && searchTerm.trim() !== '') {
+      query = query.or(`merchant.ilike.%${searchTerm}%,note.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%`);
+    }
+    
+    // Date range filtering if provided
+    if (startDate) {
+      query = query.gte('date', startDate);
+    }
+    
+    if (endDate) {
+      query = query.lte('date', endDate);
+    }
+    
+    const { data, error } = await query.order('date', { ascending: false });
+    
+    if (error) throw error;
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error searching transactions:', error);
+    return [];
+  }
+}
 
+/**
+ * Get all available categories from transactions
+ */
+export async function getCategories() {
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('category')
+      .not('category', 'is', null);
+    
+    if (error) throw error;
+    
+    // Extract unique categories
+    const categories = [...new Set(data.map(item => item.category))].filter(Boolean).sort();
+    
+    return categories;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+}
 
+export async function updateMonthlySummary(month, year, userId = null) {
+  try {
+    // If userId is not provided, try to get it from the current session
+    if (!userId) {
+      const { data: { session } } = await supabase.auth.getSession();
+      userId = session?.user?.id;
+      
+      if (!userId) {
+        throw new Error('User ID not available. Please ensure you are logged in.');
+      }
+    }
+    
+    // Call the stored procedure
+    const { data, error } = await supabase.rpc('manually_update_monthly_summary', {
+      user_uuid: userId,
+      month_num: month,
+      year_num: year
+    });
+    
+    if (error) throw error;
+    
+    console.log(`Monthly summary updated for ${month}/${year}`);
+    
+    // Fetch the updated summary
+    return await getMonthlySummary(month, year);
+    
+  } catch (error) {
+    console.error('Error updating monthly summary:', error);
+    throw error;
+  }
+}
+
+// src/lib/api.js - Add these functions to your existing API file
+
+/**
+ * Submit user feedback for an anomalous transaction
+ */
+export async function submitFeedback(transactionData, feedback) {
+  try {
+    const { data, error } = await supabase
+      .from('transaction_feedback')
+      .insert([
+        {
+          transaction_id: transactionData.transaction_id,
+          merchant: transactionData.merchant,
+          charge: transactionData.charge,
+          feedback: feedback,
+          user_id: transactionData.user_id || null
+        }
+      ])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // If the transaction needs to be updated with a category based on feedback
+    if (transactionData.transaction_id) {
+      await updateTransactionFromFeedback(transactionData.transaction_id, feedback);
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error submitting feedback:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update a transaction based on user feedback
+ * This is an example function - you would need to implement the logic
+ * to extract a category from feedback or assign a default category
+ */
+async function updateTransactionFromFeedback(transactionId, feedback) {
+  try {
+    // Here you might implement logic to:
+    // 1. Extract keywords from feedback to determine category
+    // 2. Or simply mark it as "Manually Categorized"
+    
+    const category = determineCategory(feedback);
+    
+    const { data, error } = await supabase
+      .from('expense_tracker.transactions')
+      .update({
+        category: category,
+        note: feedback // Optionally store feedback as note
+      })
+      .eq('id', transactionId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error('Error updating transaction from feedback:', error);
+    // We don't throw here to prevent blocking the feedback submission
+    return null;
+  }
+}

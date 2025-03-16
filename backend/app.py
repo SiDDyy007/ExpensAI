@@ -8,6 +8,10 @@ import os
 from typing import List
 import tempfile
 import shutil
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+import asyncio
+from typing import Optional, Dict
 
 from pdf_handler import process_pdf_and_store
 from database import (
@@ -22,7 +26,76 @@ from bert_model import process_text_with_bert
 from smolagents import CodeAgent, LiteLLMModel, tool
 from parser_tools.statement_parser_tools import parse_amex_statement, parse_zolve_statement, parse_freedom_statement
 # from agents import ExpenseAI
+router = APIRouter()
 
+# Simple in-memory storage for pending feedback requests
+# In a production app, use a database table
+pending_feedback_requests = {}
+feedback_responses = {}
+
+class FeedbackRequest(BaseModel):
+    merchant: str
+    charge: float
+    transaction_id: str
+
+class FeedbackResponse(BaseModel):
+    transaction_id: str
+    feedback: str
+
+@router.post("/transactions/request-feedback")
+async def request_feedback(request: FeedbackRequest):
+    """Endpoint for the AI to request user feedback on a transaction"""
+    transaction_id = request.transaction_id
+    pending_feedback_requests[transaction_id] = {
+        "merchant": request.merchant,
+        "charge": request.charge,
+        "timestamp": asyncio.get_event_loop().time()
+    }
+    
+    return {"success": True, "message": "Feedback request registered"}
+
+@router.get("/transactions/pending-feedback")
+async def get_pending_feedback():
+    """Endpoint for the frontend to check if there are any feedback requests"""
+    # Get the oldest pending request if any exist
+    if pending_feedback_requests:
+        transaction_id = next(iter(pending_feedback_requests))
+        transaction = pending_feedback_requests[transaction_id]
+        return {
+            "transaction": {
+                "id": transaction_id,
+                "merchant": transaction["merchant"],
+                "charge": transaction["charge"]
+            }
+        }
+    
+    return {"transaction": None}
+
+@router.post("/transactions/submit-feedback")
+async def submit_feedback(response: FeedbackResponse):
+    """Endpoint for the frontend to submit user feedback"""
+    transaction_id = response.transaction_id
+    
+    if transaction_id not in pending_feedback_requests:
+        raise HTTPException(status_code=404, detail="Feedback request not found")
+    
+    # Store the feedback
+    feedback_responses[transaction_id] = response.feedback
+    
+    # Remove from pending requests
+    if transaction_id in pending_feedback_requests:
+        del pending_feedback_requests[transaction_id]
+    
+    return {"success": True, "message": "Feedback submitted successfully"}
+
+@router.get("/transactions/get-feedback/{transaction_id}")
+async def get_feedback(transaction_id: str):
+    """Endpoint for the AI to retrieve user feedback"""
+    if transaction_id not in feedback_responses:
+        return {"success": False, "message": "No feedback available"}
+    
+    feedback = feedback_responses.pop(transaction_id)
+    return {"success": True, "feedback": feedback}
 
 app = FastAPI()
 # agent = ExpenseAI()

@@ -25,26 +25,10 @@ async def store_transaction(user_id, transaction_data):
     """
     Store a transaction in the appropriate monthly partition
     """
-    # response = supabase.auth.get_user()
-    # print("Current user response:", response)
-    # if session_token and refresh_token:
-    #     try:
-    #         print("Setting session with token:", session_token, "and refresh token:", refresh_token)
-    #         supabase.auth.set_session(session_token, refresh_token)
-    #     except Exception as e:
-    #         print(f"Error setting session: {e}")
-    #         raise ValueError("Invalid token provided")
-    # else:
-    #     raise ValueError("Token is required to set session")
-    
-    # response = supabase.auth.get_user()
-    # print("Current user 2nd response:", response)
-
-
     # Extract date from transaction data
     date_str = transaction_data.get('date')
     date_str = date_str.replace(",","").replace(" ", "").replace("*", "")  # Remove any spaces for consistent parsing
-    print("Transaction data received:", transaction_data)
+    # print("Transaction data received:", transaction_data)
     if isinstance(date_str, str):
         # Parse date string to datetime object
         try:
@@ -62,13 +46,6 @@ async def store_transaction(user_id, transaction_data):
     else:
         raise ValueError("Date is required")
     
-    # print("Getting table name for date:", date)
-    # Format table name
-    table_name = get_table_name_for_date(date)
-
-    print("Table name for date:", table_name)
-
-    
     # Prepare transaction data
     transaction = {
         'user_id': user_id,
@@ -80,8 +57,6 @@ async def store_transaction(user_id, transaction_data):
         'note': transaction_data.get('note')
     }
     
-    # Create partition if it doesn't exist
-    # create_partition_if_needed(date.month, date.year)
     table_name = 'transactions'
     print("Inserting transaction into table:", table_name)
     # Insert transaction into the appropriate table
@@ -128,39 +103,41 @@ async def store_embedding(transaction_id, table_name, embedding, metadata=None):
     try:
         result = supabase.table("transaction_embeddings").insert(embedding_data).execute()
         # print(result.data)
-    # except SupabaseException as e:
-    #     print(f"Supabase embeddings error: {e}")
     except Exception as e:
         print(f"Unexpected embdeddings error: {e}")
     
     return result.data[0] if result.data else None
 
-async def find_similar_transactions(embedding, limit=5):
+def find_similar_transactions(embedding, limit=5):
     """
     Find transactions with similar embeddings using vector similarity search
+    Returns the metadata of the most similar transactions
     """
-    # Use the vector similarity search capability of Supabase
     try:
-        query = supabase.rpc(
-            'match_transaction_embeddings',
+        result = supabase.rpc(
+            'find_similar_transactions',
             {
                 'query_embedding': embedding,
-                'match_threshold': 0.8,  # Adjust based on your needs
+                'match_threshold': 0.8,
                 'match_count': limit
             }
-        )
-        result = query.execute()
-        print(result.data)
-    # except SupabaseException as e:
-    #     print(f"Supabase similar error: {e}")
+        ).execute()
+        
+        print(f"Found {len(result.data)} similar transactions")
+        final_result = [result['metadata'] for result in result.data]  # Extract metadata from results
+        return final_result
     except Exception as e:
-        print(f"Unexpected similar error: {e}")
-    return result.data
+        print(f"Error finding similar transactions: {e}")
+        return []
 
 async def get_monthly_summary(user_id, month, year):
     """
     Get the monthly summary for a user
     """
+    try:
+        update_monthly_summary(user_id, month, year)  # Ensure the summary is up-to-date
+    except Exception as e:
+        print(f"Error updating monthly summary: {e}")
     try:
         result = supabase.table("monthly_summaries") \
             .select("*") \
@@ -168,24 +145,42 @@ async def get_monthly_summary(user_id, month, year):
             .eq("month", month) \
             .eq("year", year) \
             .execute()
-        print(result.data)
-    # except SupabaseException as e:
-    #     print(f"Supabase summary error: {e}")
+        
+        if result.data and len(result.data) > 0:
+            print(f"Retrieved summary for user {user_id} in {month}/{year}")
+            return result.data[0]
+        else:
+            print(f"No summary found for user {user_id}, month {month}, year {year}")
+            
+            # If no summary exists, we'll create a placeholder with zero values
+            # This is optional but provides a better UX than showing nothing
+            return {
+                "user_id": user_id,
+                "month": month,
+                "year": year,
+                "total_expenses": 0,
+                "total_income": 0,
+                "expenses_by_card": {},
+                "expenses_by_category": {}
+            }
+            
     except Exception as e:
-        print(f"Unexpected summary error: {e}")
-    
-    return result.data[0] if result.data else None
+        print(f"Error getting monthly summary: {e}")
+        return None
 
 async def get_user_transactions(user_id, month, year, category=None, card=None):
     """
     Get transactions for a specific user in a given month/year with optional filters
     """
-    table_name = f"transactions_{month:02d}_{year}"
-    
-    # Start building the query
-    query = supabase.table(f"{table_name}") \
+    # Query the transactions table directly with date filtering
+    query = supabase.table("transactions") \
         .select("*") \
         .eq("user_id", user_id)
+    
+    # Filter by month and year using PostgreSQL EXTRACT function on the date column
+    query = query \
+        .filter("EXTRACT(MONTH FROM date::timestamp)", "eq", month) \
+        .filter("EXTRACT(YEAR FROM date::timestamp)", "eq", year)
     
     # Add optional filters
     if category:
@@ -197,11 +192,10 @@ async def get_user_transactions(user_id, month, year, category=None, card=None):
     try:
         # Execute the query
         result = query.order("date", desc=True).execute()
-        print(result.data)
-    # except SupabaseException as e:
-    #     print(f"Supabase get trans error: {e}")
+        print(f"Retrieved {len(result.data)} transactions for user {user_id} in {month}/{year}")
     except Exception as e:
-        print(f"Unexpected get trans error: {e}")
+        print(f"Unexpected get transactions error: {e}")
+        return []
         
     return result.data
 
@@ -224,3 +218,50 @@ async def update_transaction_category(transaction_id, table_name, category, note
         print(f"Unexpected update error: {e}")
     
     return result.data[0] if result.data else None
+
+def update_monthly_summary(user_id, month, year ):
+    """
+    Manually triggers an update of the monthly summary for a specific user, month, and year.
+    
+    Args:
+        user_id (str): UUID of the user
+        month (int): Month number (1-12)
+        year (int): Year (e.g., 2024)
+        
+    Returns:
+        dict: Result of the operation
+    """
+    try:
+        # Call the stored procedure in Supabase
+        result = supabase.rpc(
+            'update_monthly_summary',
+            {
+                'user_uuid': user_id,
+                'month_num': month,
+                'year_num': year
+            }
+        ).execute()
+        
+        print(f"Successfully updated monthly summary for user {user_id}, month {month}, year {year}")
+        
+        # Fetch and return the updated summary
+        summary_result = supabase.table("monthly_summaries") \
+            .select("*") \
+            .eq("user_id", user_id) \
+            .eq("month", month) \
+            .eq("year", year) \
+            .execute()
+            
+        return {
+            'success': True,
+            'message': f"Monthly summary updated for {month}/{year}",
+            'summary': summary_result.data[0] if summary_result.data else None
+        }
+        
+    except Exception as e:
+        print(f"Error updating monthly summary: {e}")
+        return {
+            'success': False,
+            'message': f"Failed to update monthly summary: {str(e)}",
+            'error': str(e)
+        }

@@ -11,22 +11,21 @@ from sentence_transformers import SentenceTransformer
 from smolagents import CodeAgent, LiteLLMModel, tool, ToolCallingAgent
 # from parser_tools.statement_parser_tools import parse_amex_statement
 import numpy as np
+import time
+import requests
+import uuid
 
 # Load BERT model for NER
-model_path = 'transaction_extraction_model/'
+model_path = os.environ.get("PRETRAINED_MODEL_PATH")
 # Load tokenizer
 tokenizer = BertTokenizerFast.from_pretrained(model_path)
 # Load model (automatically detects .safetensors)
 model = BertForTokenClassification.from_pretrained(model_path)
 
 agent_model = LiteLLMModel(
-            model_id='claude-3-5-haiku-20241022',
+            model_id=os.environ.get("ANTHROPIC_MODEL"),  # Ensure this is set in your environment
             api_key=os.environ.get("ANTHROPIC_API_KEY"),  # Ensure this is set in your environment
         )
-
-# tokenizer = AutoTokenizer.from_pretrained("dbmdz/bert-large-cased-finetuned-conll03-english")
-# model = AutoModelForTokenClassification.from_pretrained("dbmdz/bert-large-cased-finetuned-conll03-english")
-# ner = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
 
 # Load sentence transformer for embeddings
 embedding_model = SentenceTransformer("intfloat/multilingual-e5-large-instruct")
@@ -169,41 +168,153 @@ def get_historical_context(note_to_search : str) -> dict:
     Returns:
         dict: A dictionary containing historical context for the transaction
     """
-    context = []
-    """
-    Find transactions with similar embeddings using vector similarity search
-    """
     # Use the vector similarity search capability of Supabase
     from database import find_similar_transactions
-    note_embedding = create_embedding(note_to_search)
+    try:
+        note_embedding = create_embedding(note_to_search)
+    except Exception as e:
+        print(f"Error creating embedding for note: {e}")
+        return "Error creating embedding for note"
+
+    # Find similar transactions based on the note embedding
     result = find_similar_transactions(note_embedding.tolist(), limit=5)
     if not result:
+        print("No similar transactions found")
         return "No similar transactions found"
+    # print(f"Found {len(result)} similar transactions")
+    # print("Similar transactions:", result)
     return result
 
 @tool
-def get_human_feedback(transaction : dict) -> str:
+def get_human_feedback(merchant: str, charge: float) -> str:
     """
-    Get human feedback for anomalous transactions which you can not categorize on your own or based upon historical context.
+    Get human feedback for anomalous transactions that cannot be categorized automatically.
     Args:
-        transaction: Transaction dictionary to get feedback on
-    
+        merchant: The name of the merchant for the transaction.
+        charge: The transaction amount.
     Returns:
-        str: Human feedback on the transaction
+        str: Human feedback on the transaction.
     """
     try:
-        return input(f"""The following transaction has been determined to be anomalous based on previous charges:
-                     {transaction} 
-                     Please provide feedback/explanation on the transaction for future reference.\n""")
+        # Generate a unique ID for this feedback request
+        transaction_id = str(uuid.uuid4())
+        
+        # API endpoint for requesting feedback
+        api_url = f"{os.getenv('API_BASE_URL', 'http://localhost:8000')}/api"
+        
+        # Send the feedback request to the API
+        response = requests.post(
+            f"{api_url}/transactions/request-feedback",
+            json={
+                "transaction_id": transaction_id,
+                "merchant": merchant,
+                "charge": charge
+            }
+        )
+        
+        if not response.ok:
+            return f"Error requesting feedback: HTTP {response.status_code}"
+        
+        # Poll for the feedback response (with timeout)
+        max_wait_time = 300  # 5 minutes
+        poll_interval = 2  # 2 seconds
+        total_wait_time = 0
+        
+        while total_wait_time < max_wait_time:
+            # Wait before checking
+            time.sleep(poll_interval)
+            total_wait_time += poll_interval
+            
+            # Check if feedback is available
+            feedback_response = requests.get(
+                f"{api_url}/transactions/get-feedback/{transaction_id}"
+            )
+            
+            if feedback_response.ok:
+                data = feedback_response.json()
+                if data.get("success"):
+                    return data.get("feedback", "No feedback provided")
+            
+            # If we're still waiting, print a message every 30 seconds
+            if total_wait_time % 30 == 0:
+                print(f"Waiting for user feedback ({total_wait_time} seconds elapsed)...")
+        
+        return "No feedback received (timeout)"
+        
     except Exception as e:
         return f"Error getting feedback: {str(e)}"
+    # try:
+    #     return input(f"""The following transaction has been flagged as anomalous:
+        
+    #     Merchant: {merchant}
+    #     Charge: ${charge}
+        
+    #     Please provide feedback or an explanation for future reference:\n""")
+    # except Exception as e:
+    #     return f"Error getting feedback: {str(e)}"
+    
+from datetime import datetime
 
+def complete_date(date_str, assumed_year=None):
+    """Converts 'MM / DD' to 'YYYY-MM-DD' with assumed or current year."""
+    try:
+        assumed_year = assumed_year or datetime.now().year
+        month, day = map(int, date_str.replace(" ", "").split("/"))
+        return f"{assumed_year:04d}-{month:02d}-{day:02d}"
+    except Exception as e:
+        print(f"Error completing date: {e}")
+        return None
+
+def parse_freedom_transaction(transaction) -> bool:
+    # Set card issuer here and modification of transaction
+    if not transaction.get('Charge') or not transaction.get('Date') or not transaction.get('Merchant') or '$' in transaction.get('Charge'):
+        return False
+    transaction['Date'] = complete_date(transaction['Date'])
+    if not transaction['Date']:
+        return False
+    transaction['Card'] = 'FREEDOM'
+    return transaction
 
 def parse_amex_transaction(transaction) -> bool:
     # Set card issuer here and modification of transaction
     if not transaction.get('Charge') or not transaction.get('Date') or not transaction.get('Merchant') or '$' not in transaction.get('Charge'):
-        return True
-    return False
+        return False
+    transaction['Card'] = 'AMEX'
+    transaction['Date'] = parse_date(transaction['Date'])
+    if not transaction['Date']:
+        return False
+    return transaction
+
+def parse_date(date_str):
+    """
+    Parse date string to 'YYYY-MM-DD' format
+    """
+    # date_str = transaction_data.get('date')
+    date_str = date_str.replace(",","").replace(" ", "").replace("*", "")  # Remove any spaces for consistent parsing
+    # print("Transaction data received:", transaction_data)
+    if isinstance(date_str, str):
+        # Parse date string to datetime object
+        try:
+            date = datetime.strptime(date_str, '%m/%d/%y')
+        except ValueError:
+            try:
+                date = datetime.strptime(date_str, '%m/%d/%Y')
+            except ValueError:
+                raise ValueError(f"Unsupported date format: {date_str}")
+        except Exception as e:
+            print(f"Error parsing date: {e} Skipping this boiiiiii")
+            return None
+    elif isinstance(date_str, datetime):
+        date = date_str
+    else:
+        print("Date is required")
+        return None
+    return date
+
+card_issuers = {    'AMEX': parse_amex_transaction,
+                    'FREEDOM': parse_freedom_transaction,
+                    'ZOLVE': 'ZOLVE' # TODO: Implement ZOLVE transaction parsing
+                }
 
 def get_category_and_note(transaction):
     """
@@ -213,26 +324,27 @@ def get_category_and_note(transaction):
         tools=[get_historical_context, get_human_feedback],
         model=agent_model,
         add_base_tools=True,
-        additional_authorized_imports=["pandas"]
+        additional_authorized_imports=["pandas", "datetime", "numpy"]  # Ensure these libraries are available for the agent
     )
 
 
     try:
-        analysis_prompt = (
-            f"Can you analyze this transaction: {transaction}?\n\n"
-            "For the analysis you can also refer to previous transactions of the user.\n " 
-            "For that you can use get_historical_context tool where you can craft an short note argument of the charge type based upon your understanding\n\n"
-            "Based on the analysis, either ask the human to provide feedback or clarification "
-            "on the transaction for future use (only if needed).\n\n"
-            "Craft a concise short note description to include with the JSON object for future reference.\n\n"
-            "Also include the category of the transaction from [Housing, Grocery, Fun, Investment, Miscellaneous].\n\n"
-            "The output must strictly be a Python dictionary object, not a string representation, "
-            "and follow this structure:\n"
-            "{\n"
-            '    "category": <<transaction_category>>,\n'
-            '    "note": <<note>>,\n'
-            "}"
-        )
+        analysis_prompt = """You are a financial analyst assisting in transaction categorization and pattern recognition.  
+
+        Context:  
+        Analyze the given transaction. If relevant, refer to previous user transactions using the `get_historical_context` tool.  
+        Use your understanding to craft a short note describing the charge type.  
+        If needed, ask the user for feedback or clarification for future reference.  
+
+        Output Format:  
+        Return a Python dictionary following this exact structure:  
+
+        {  
+            "category": <<One of ['Housing', 'Grocery', 'Fun', 'Investment', 'Miscellaneous']>>,  
+            "note": <<Concise explanation of the transaction>>  
+        }  
+
+        Transaction: {transaction}"""
             
         transaction_analysis = analysis_agent.run(analysis_prompt)
 
@@ -255,7 +367,6 @@ async def process_pdf_and_store(file: UploadFile, user_id: str):
         temp_file_path = temp_file.name
 
     # Extract text from PDF
-    # text_list = []
     with pdfplumber.open(temp_file_path) as pdf:
         for page in pdf.pages:
             first_page_text = page.extract_text()
@@ -265,109 +376,118 @@ async def process_pdf_and_store(file: UploadFile, user_id: str):
         extraction_agent = CodeAgent(
             model=agent_model,
             tools=[],
-            add_base_tools=True
+            add_base_tools=False
         )
 
-        response = extraction_agent.run(
-                    f"""Based upon the first page of the statement, determine the card issuer and output its name\n
-                    First page text \n : {first_page_text} \n
-                    The card issuer names must be from ['AMEX', 'FREEDOM', 'ZOLVE']\n
-                    Only output the card issuer name from the given names and nothing else. \n"""
-        )
+        extractor_text =f"""You are an information extractor specialized in identifying financial institutions.  
+
+                        Context:  
+                        Analyze the first page of the statement and determine the card issuer. The issuer must be one of the following: ['AMEX', 'FREEDOM', 'ZOLVE'].  
+
+                        First Page Text:  
+                        {first_page_text}
+
+                        Output Format:  
+                        Return only the card issuer name from the given list—nothing else."""
+
+        card_issuer_response = extraction_agent.run(extractor_text)
     except Exception as e:
         print(f"Error during card issuer detection: {e}")
         return {
             'success': False,
             'error': str(e)
         }
-    print("Card issuer detection response:", response)
-    if response == 'AMEX':
-        print("Detected card issuer: AMEX")
-        postprocessing_function = parse_amex_transaction
-        # Post processing function Addition here
-        try:
-            # Extract text from PDF
-            text_list = []
-            with pdfplumber.open(temp_file_path) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_list.append(page_text)
-            
-            # Extract transactions from text
-            # first_page = text_list[0]
-            transactions = extract_transactions(text_list)
-            print("Length of transactions:", len(transactions))
-            
-            # Store each transaction
-            stored_transactions = []
-            for transaction in transactions:
-                try:
-                    # Format transaction for database
-                    if postprocessing_function(transaction):
-                        # Skip incomplete transactions
-                        print(f"Skipping incomplete transaction: {transaction}")
-                        continue
-                    print(f"Processing transaction: {transaction}")
-                    
-                    db_transaction = {
-                        'date': transaction.get('Date'),
-                        'merchant': transaction.get('Merchant'),
-                        'amount': parse_amount(transaction.get('Charge', '0')),
-                        'card': transaction.get('Card', 'UNKNOWN'),
-                        # Category and note will be filled later by LLM
-                    }
-                    analysis = get_category_and_note(db_transaction)
-                    print("Analysis result:", analysis)
-                    if analysis and 'category' in analysis and 'note' in analysis:
-                        db_transaction['category'] = analysis['category']
-                        db_transaction['note'] = analysis['note']
+    
+    postprocessing_function = card_issuers.get(card_issuer_response.strip(), None)
+    if not postprocessing_function:
+        return {
+            'success': False,
+            'error': "Card issuer not recognized or unsupported"
+        }
+    print("Card issuer detection response:", card_issuer_response)
 
-                    
-                    # print("Created db dict:", db_transaction)
-                    if db_transaction['amount'] == 0:
-                        print(f"Skipping transaction with zero amount: {db_transaction}")
-                        continue
-                
-                    # Store in database
-                    result = await store_transaction(user_id, db_transaction)
-                    if result:
-                        stored_transactions.append(result)
-                        
-                        # Generate note for the transaction (will be updated later by LLM)
-                        if not db_transaction.get('note'):
-                            note = f"{transaction.get('Date')} {transaction.get('Merchant')} {transaction.get('Charge')}"
-                        else:
-                            note = db_transaction['note']
-                        
-                        # Create and store embedding
-                        print(f"Creating embedding for note: {note}")
-                        embedding = create_embedding(note)
-                        # table_name = f"transactions_{result['date'].month:02d}_{result['date'].year}"
-                        table_name = 'transactions_sample'  # For simplicity, using a static table name
-                        print("Storing embedding now ...")
-                        await store_embedding(result['id'], table_name, embedding.tolist(), {
-                            'merchant': transaction.get('Merchant'),
-                            'amount': parse_amount(transaction.get('Charge', '0'))
-                        })
-                except Exception as e:
-                    print(f"Error processing transaction {transaction}: {e}")
-                    continue
-            
-            return {
-                'success': True,
-                'transactions_count': len(stored_transactions),
-                'transactions': stored_transactions
-            }
+    try:
+        # Extract text from PDF
+        text_list = []
+        with pdfplumber.open(temp_file_path) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text_list.append(page_text)
         
-        except Exception as e:
-            return {
-                'success': False,
-                'error': str(e)
-            }
-        finally:
-            # Clean up the temporary file
-            os.unlink(temp_file_path)
+        # Extract transactions from text
+        transactions = extract_transactions(text_list)
+        print("Length of transactions:", len(transactions))
+        
+        # Store each transaction
+        stored_transactions = []
+        for extracted_transaction in transactions:
+            try:
+                transaction = postprocessing_function(extracted_transaction)
+                # Format transaction for database
+                if not transaction:
+                    # Skip incomplete transactions
+                    print(f"Skipping incomplete transaction: {transaction}")
+                    continue
+                print(f"Processing transaction: {transaction}")
+                
+                db_transaction = {
+                    'date': transaction.get('Date'),
+                    'merchant': transaction.get('Merchant'),
+                    'amount': parse_amount(transaction.get('Charge', '0')),
+                    'card': transaction.get('Card', 'UNKNOWN'),
+                    # Category and note will be filled later by LLM
+                }
+                if db_transaction['amount'] == 0:
+                    print(f"Skipping transaction with zero amount: {db_transaction}")
+                    continue
+
+                analysis = get_category_and_note(db_transaction)
+                print("Analysis result:", analysis)
+                if analysis and 'category' in analysis and 'note' in analysis:
+                    db_transaction['category'] = analysis['category']
+                    db_transaction['note'] = analysis['note']
+
+            
+                # Store in database
+                result = await store_transaction(user_id, db_transaction)
+                if result:
+                    stored_transactions.append(result)
+                    
+                    # Generate note for the transaction (will be updated later by LLM)
+                    if not db_transaction.get('note'):
+                        note = f"{transaction.get('Date')} {transaction.get('Merchant')} {transaction.get('Charge')}"
+                    else:
+                        note = db_transaction['note']
+                    
+                    # Create and store embedding
+                    print(f"Creating embedding for note: {note}")
+                    embedding = create_embedding(note)
+                    # table_name = f"transactions_{result['date'].month:02d}_{result['date'].year}"
+                    table_name = 'transactions_sample'  # For simplicity, using a static table name
+                    print("Storing embedding now ...")
+                    await store_embedding(result['id'], table_name, embedding.tolist(), {
+                        'merchant': transaction.get('Merchant'),
+                        'amount': parse_amount(transaction.get('Charge', '0'))
+                    })
+            except Exception as e:
+                print(f"Error processing transaction {transaction}: {e}")
+                continue
+        
+        return {
+            'success': True,
+            'transactions_count': len(stored_transactions),
+            'transactions': stored_transactions
+        }
+    
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }
+    finally:
+        # Clean up the temporary file
+        os.unlink(temp_file_path)
 
 def parse_amount(amount_str):
     """
@@ -388,6 +508,7 @@ def create_embedding(text):
         # Use sentence transformer to create embedding
         # print(f"Creating embedding for text: {text}")
         embedding = embedding_model.encode([text])
+        print(f"Embedding created for text: {text}")
         # print(f"Embedding shape: {embedding.shape}")
         # print(f"Embedding len: {len(embedding)}")
     except Exception as e:
