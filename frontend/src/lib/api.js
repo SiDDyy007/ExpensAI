@@ -41,37 +41,82 @@ export async function getTransactions(month, year, category = null, card = null)
   }
 }
 
-/**
- * Get monthly summary for a specific month and year
- */
-export async function getMonthlySummary(month, year) {
+// Get monthly summary using the new tables
+export const getMonthlySummary = async (month, year) => {
   try {
-    const { data, error } = await supabase
-      .from('monthly_summaries')
-      .select('*')
+    const userId = (await supabase.auth.getUser()).data.user.id;
+
+    // Fetch card summaries
+    const { data: cardData, error: cardError } = await supabase
+      .from('monthly_card_summaries')
+      .select('card, total_expense')
+      .eq('user_id', userId)
       .eq('month', month)
-      .eq('year', year)
-      .single();
+      .eq('year', year);
+      
+    if (cardError) throw cardError;
     
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "Results contain 0 rows"
-      throw error;
-    }
+    // Fetch category summaries
+    const { data: categoryData, error: categoryError } = await supabase
+      .from('monthly_category_summaries')
+      .select('category, total_expense')
+      .eq('user_id', userId)
+      .eq('month', month)
+      .eq('year', year);
+      
+    if (categoryError) throw categoryError;
     
-    // Return data or a default summary object if none exists
-    return data || {
+    // Fetch total expenses (sum of all positive charges) and income (sum of all negative charges)
+    const { data: totalsData, error: totalsError } = await supabase
+      .from('transactions')
+      .select('charge')
+      .eq('user_id', userId)
+      .gte('date', `${year}-${String(month).padStart(2, '0')}-01`)
+      .lt('date', month === 12 
+        ? `${year + 1}-01-01` 
+        : `${year}-${String(month + 1).padStart(2, '0')}-01`);
+      
+    if (totalsError) throw totalsError;
+    
+    const totalExpenses = totalsData
+      .filter(tx => tx.charge > 0)
+      .reduce((sum, tx) => sum + tx.charge, 0);
+      
+    const totalIncome = totalsData
+      .filter(tx => tx.charge < 0)
+      .reduce((sum, tx) => sum + tx.charge, 0);
+    
+    // Convert arrays to objects for easier access in the UI
+    const expensesByCard = {};
+    cardData.forEach(item => {
+      expensesByCard[item.card] = item.total_expense;
+    });
+    
+    const expensesByCategory = {};
+    categoryData.forEach(item => {
+      expensesByCategory[item.category] = item.total_expense;
+    });
+    
+    return {
+      month,
+      year,
+      total_expenses: totalExpenses,
+      total_income: totalIncome,
+      expenses_by_card: expensesByCard,
+      expenses_by_category: expensesByCategory
+    };
+  } catch (error) {
+    console.error('Error fetching monthly summary:', error);
+    return {
       month,
       year,
       total_expenses: 0,
       total_income: 0,
       expenses_by_card: {},
-      expenses_by_category: {},
-      summary: null
+      expenses_by_category: {}
     };
-  } catch (error) {
-    console.error('Error fetching monthly summary:', error);
-    return null;
   }
-}
+};
 
 /**
  * Update transaction category and note
@@ -255,3 +300,21 @@ async function updateTransactionFromFeedback(transactionId, feedback) {
     return null;
   }
 }
+
+// Trigger a recalculation of summaries for a specific month
+export const recalculateMonthlySummary = async (month, year) => {
+  try {
+    const { data, error } = await supabase
+      .rpc('calculate_all_monthly_summaries', {
+        p_month: month,
+        p_year: year,
+        p_user_id: (await supabase.auth.getUser()).data.user.id
+      });
+      
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error recalculating summary:', error);
+    return { success: false, error: error.message };
+  }
+};

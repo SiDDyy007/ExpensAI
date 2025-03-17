@@ -196,62 +196,48 @@ def get_human_feedback(merchant: str, charge: float) -> str:
         str: Human feedback on the transaction.
     """
     try:
-        # Generate a unique ID for this feedback request
-        transaction_id = str(uuid.uuid4())
-        
-        # API endpoint for requesting feedback
-        api_url = f"{os.getenv('API_BASE_URL', 'http://localhost:8000')}/api"
-        
-        # Send the feedback request to the API
-        response = requests.post(
-            f"{api_url}/transactions/request-feedback",
-            json={
-                "transaction_id": transaction_id,
-                "merchant": merchant,
-                "charge": charge
-            }
-        )
-        
-        if not response.ok:
-            return f"Error requesting feedback: HTTP {response.status_code}"
-        
-        # Poll for the feedback response (with timeout)
-        max_wait_time = 300  # 5 minutes
-        poll_interval = 2  # 2 seconds
-        total_wait_time = 0
-        
-        while total_wait_time < max_wait_time:
-            # Wait before checking
-            time.sleep(poll_interval)
-            total_wait_time += poll_interval
+            # Define API endpoints (adjust based on your deployment)
+            api_base_url = "http://localhost:3000/api/transactions"
+            request_endpoint = f"{api_base_url}/request-feedback"
+            result_endpoint = f"{api_base_url}/get-feedback-result"
             
-            # Check if feedback is available
-            feedback_response = requests.get(
-                f"{api_url}/transactions/get-feedback/{transaction_id}"
+            # Request feedback from frontend
+            response = requests.post(
+                request_endpoint,
+                json={"merchant": merchant, "charge": charge}
             )
             
-            if feedback_response.ok:
-                data = feedback_response.json()
-                if data.get("success"):
-                    return data.get("feedback", "No feedback provided")
+            if not response.ok:
+                print(f"Error requesting feedback: {response.status_code} {response.text}")
+                return "Could not get feedback. Please use your best judgement for now"
             
-            # If we're still waiting, print a message every 30 seconds
-            if total_wait_time % 30 == 0:
-                print(f"Waiting for user feedback ({total_wait_time} seconds elapsed)...")
-        
-        return "No feedback received (timeout)"
-        
+            request_data = response.json()
+            request_id = request_data.get("requestId")
+            
+            if not request_id:
+                print( "Error: Missing request ID in response")
+                return "Could not get feedback. Please use your best judgement for now"
+            
+            # Wait for user feedback with timeout (default 5 minutes)
+            max_attempts = 60  # 5 minutes with 5-second intervals
+            for attempt in range(max_attempts):
+                # Check if feedback is available
+                result_response = requests.get(f"{result_endpoint}?requestId={request_id}")
+                
+                if result_response.status_code == 200:
+                    result_data = result_response.json()
+                    if result_data.get("success"):
+                        return result_data.get("feedback", "")
+                
+                # Wait before checking again
+                time.sleep(5)
+            print("Feedback request timed out after 5 minutes")
+            return "Could not get feedback. Please use your best judgement for now"
+            # return "Feedback request timed out after 5 minutes"
+            
     except Exception as e:
-        return f"Error getting feedback: {str(e)}"
-    # try:
-    #     return input(f"""The following transaction has been flagged as anomalous:
-        
-    #     Merchant: {merchant}
-    #     Charge: ${charge}
-        
-    #     Please provide feedback or an explanation for future reference:\n""")
-    # except Exception as e:
-    #     return f"Error getting feedback: {str(e)}"
+        print( f"Error getting feedback: {str(e)}")
+        return "Could not get feedback. Please use your best judgement for now"
     
 from datetime import datetime
 
@@ -329,22 +315,23 @@ def get_category_and_note(transaction):
 
 
     try:
-        analysis_prompt = """You are a financial analyst assisting in transaction categorization and pattern recognition.  
+        analysis_prompt = f"""You are a financial analyst assisting in transaction categorization and pattern recognition.  
 
-        Context:  
-        Analyze the given transaction. If relevant, refer to previous user transactions using the `get_historical_context` tool.  
-        Use your understanding to craft a short note describing the charge type.  
-        If needed, ask the user for feedback or clarification for future reference.  
+                            Context:  
+                            Analyze the given transaction based upon your understanding and reasoning to categorize it. 
+                            If relevant, refer to previous user transactions using the `get_historical_context` tool.  
+                            Use your understanding to craft a short note describing the charge type.  
+                            If needed, ask the user for feedback or clarification for future reference.  
 
-        Output Format:  
-        Return a Python dictionary following this exact structure:  
+                            Output Format:  
+                            Return a Python dictionary following this exact structure:  
 
-        {  
-            "category": <<One of ['Housing', 'Grocery', 'Fun', 'Investment', 'Miscellaneous']>>,  
-            "note": <<Concise explanation of the transaction>>  
-        }  
+                            {{  
+                                "category": <<One of ['Housing', 'Grocery', 'Fun', 'Investment', 'Miscellaneous']>>,  
+                                "note": <<Concise explanation of the transaction for your future reference>>  
+                            }}  
 
-        Transaction: {transaction}"""
+                            Transaction: {transaction}"""
             
         transaction_analysis = analysis_agent.run(analysis_prompt)
 

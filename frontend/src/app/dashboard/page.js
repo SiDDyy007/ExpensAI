@@ -6,7 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import PdfDropzone from '@/components/upload/PdfDropzone';
 import { getTransactions, getMonthlySummary } from '@/lib/api';
-// import FeedbackPopup from '@/components/feedback/FeedbackPopup';
+import FeedbackPopup from '@/components/feedback/FeedbackPopup';
+import RecalculateButton from '@/components/summary/RecalculateButton';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -18,6 +19,7 @@ export default function Dashboard() {
   const [view, setView] = useState('summary'); // 'summary' or 'transactions'
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
+  // Feedback popup state
   const [feedbackPopupOpen, setFeedbackPopupOpen] = useState(false);
   const [currentFeedbackTransaction, setCurrentFeedbackTransaction] = useState(null);
 
@@ -64,6 +66,33 @@ export default function Dashboard() {
     }
   }, [user, selectedMonth, selectedYear]);
 
+  // Function to check for pending feedback requests
+  const checkFeedbackRequests = async () => {
+    try {
+      const response = await fetch('/api/transactions/pending-feedback');
+      const data = await response.json();
+      
+      if (data.transaction) {
+        setCurrentFeedbackTransaction(data.transaction);
+        setFeedbackPopupOpen(true);
+      }
+    } catch (error) {
+      console.error("Error checking feedback requests:", error);
+    }
+  };
+
+  // Poll for feedback requests
+  useEffect(() => {
+    // Check on initial load
+    checkFeedbackRequests();
+    
+    // Set up polling (every 10 seconds)
+    const interval = setInterval(checkFeedbackRequests, 10000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+
   const handleMonthChange = (e) => {
     setSelectedMonth(parseInt(e.target.value));
   };
@@ -78,49 +107,25 @@ export default function Dashboard() {
   };
 
   // Function to handle feedback submission
-  // const handleFeedbackSubmit = async (feedback) => {
-  //   try {
-  //     await fetch('/api/transactions/submit-feedback', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         transactionId: currentFeedbackTransaction.id,
-  //         feedback
-  //       }),
-  //     });
+  const handleFeedbackSubmit = async (feedback) => {
+    try {
+      await fetch('/api/transactions/submit-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transactionId: currentFeedbackTransaction.id,
+          feedback
+        }),
+      });
       
-  //     setFeedbackPopupOpen(false);
-  //     setCurrentFeedbackTransaction(null);
-  //   } catch (error) {
-  //     console.error("Error submitting feedback:", error);
-  //   }
-  // };
-
-  // // Add a function to check for pending feedback requests
-  // const checkFeedbackRequests = async () => {
-  //   try {
-  //     const { data, error } = await fetch('/api/transactions/pending-feedback');
-  //     if (!error && data && data.transaction) {
-  //       setCurrentFeedbackTransaction(data.transaction);
-  //       setFeedbackPopupOpen(true);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error checking feedback requests:", error);
-  //   }
-  // };
-
-  // Use an effect to check periodically
-  // useEffect(() => {
-  //   // Check on initial load
-  //   checkFeedbackRequests();
-    
-  //   // Set up polling (every 30 seconds)
-  //   const interval = setInterval(checkFeedbackRequests, 30000);
-    
-  //   return () => clearInterval(interval);
-  // }, []);
+      setFeedbackPopupOpen(false);
+      setCurrentFeedbackTransaction(null);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+    }
+  };
 
   // Filter transactions based on search term
   const filteredTransactions = transactions.filter(tx => {
@@ -219,58 +224,78 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Date selector and upload area */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="md:col-span-2 bg-white rounded-lg shadow p-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  {getMonthName(selectedMonth)} {selectedYear} Overview
-                </h2>
-                <div className="flex space-x-4">
-                  <div>
-                    <label htmlFor="month" className="block text-sm font-medium text-gray-700 mb-1">Month</label>
-                    <select
-                      id="month"
-                      value={selectedMonth}
-                      onChange={handleMonthChange}
-                      className="block w-32 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                    >
-                      {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                        <option key={month} value={month}>
-                          {getMonthName(month)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-                    <select
-                      id="year"
-                      value={selectedYear}
-                      onChange={handleYearChange}
-                      className="block w-24 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                    >
-                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-             
-              <div className="mt-4 md:mt-0">
-                <button 
-                  onClick={() => window.print()} 
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                  </svg>
-                  Export Report
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="md:col-span-2 bg-white rounded-lg shadow p-6">
+  <div className="flex flex-col md:flex-row md:items-end justify-between">
+    <div>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        {getMonthName(selectedMonth)} {selectedYear} Overview
+      </h2>
+      <div className="flex space-x-4">
+        <div>
+          <label htmlFor="month" className="block text-sm font-medium text-gray-700 mb-1">Month</label>
+          <select
+            id="month"
+            value={selectedMonth}
+            onChange={handleMonthChange}
+            className="block w-32 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+              <option key={month} value={month}>
+                {getMonthName(month)}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div>
+          <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+          <select
+            id="year"
+            value={selectedYear}
+            onChange={handleYearChange}
+            className="block w-24 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+   
+    <div className="mt-4 md:mt-0 flex space-x-3">
+      <RecalculateButton 
+        month={selectedMonth} 
+        year={selectedYear} 
+        onSuccess={() => {
+          // Refresh data after recalculation
+          setLoading(true);
+          Promise.all([
+            getTransactions(selectedMonth, selectedYear),
+            getMonthlySummary(selectedMonth, selectedYear)
+          ]).then(([txData, summaryData]) => {
+            setTransactions(txData);
+            setSummary(summaryData);
+            setLoading(false);
+          }).catch(error => {
+            console.error("Error refreshing data:", error);
+            setLoading(false);
+          });
+        }} 
+      />
+      
+      <button 
+        onClick={() => window.print()} 
+        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+        </svg>
+        Export Report
+      </button>
+    </div>
+  </div>
+</div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload Statements</h2>
@@ -574,12 +599,12 @@ export default function Dashboard() {
         )}
       </div>
       {/* Feedback Popup */}
-    {/* <FeedbackPopup
-      isOpen={feedbackPopupOpen}
-      transaction={currentFeedbackTransaction}
-      onSubmit={handleFeedbackSubmit}
-      onClose={() => setFeedbackPopupOpen(false)}
-    /> */}
+      <FeedbackPopup
+        isOpen={feedbackPopupOpen}
+        transaction={currentFeedbackTransaction}
+        onSubmit={handleFeedbackSubmit}
+        onClose={() => setFeedbackPopupOpen(false)}
+      />
     </div>
   );
 }
