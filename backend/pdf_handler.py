@@ -10,9 +10,12 @@ from smolagents import CodeAgent, LiteLLMModel, tool
 import numpy as np
 import time
 import requests
+from huggingface_hub import hf_hub_download
+
+model_path = hf_hub_download("siddhant207/ExpensBERT", "ExpensBERT")
 
 # Load BERT model for NER
-model_path = os.environ.get("PRETRAINED_MODEL_PATH")
+# model_path = os.environ.get("PRETRAINED_MODEL_PATH")
 # Load tokenizer
 tokenizer = BertTokenizerFast.from_pretrained(model_path)
 # Load model (automatically detects .safetensors)
