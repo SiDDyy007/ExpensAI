@@ -5,9 +5,6 @@ bitsandbytes==0.42.0
 duckduckgo_search==7.2.1
 fastapi==0.104.1
 Flask==3.1.0
-geopandas==1.0.1
-gitdb==4.0.11
-GitPython==3.1.43
 huggingface-hub==0.28.0
 numpy
 oauthlib==3.2.2
@@ -33,14 +30,11 @@ sentencepiece==0.2.0
 smolagents==1.2.1
 SQLAlchemy==2.0.23
 tensorflow==2.18.0
-tiktoken==0.8.0
 tokenizers==0.21.0
 torch==2.5.1
 torchaudio==2.5.1
 torchvision==0.20.1
-tqdm==4.66.4
 transformers==4.47.1
-uritemplate==4.1.1
 urllib3==2.2.2
 uvicorn==0.24.0
 
