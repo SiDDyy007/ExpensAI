@@ -76,8 +76,8 @@ const FeedbackPopup = ({ isOpen, transaction, onSubmit, onClose }) => {
                     
                     <div className="mt-4 grid grid-cols-2 gap-2">
                       {[
-                        'Entertainment', 'Shopping', 'Travel', 
-                        'Utilities', 'Grocery', 'Miscellaneous'
+                        'Grocery', 'Fun', 
+                        'Utilities', 'Investment', 'Miscellaneous', 'Payments'
                       ].map(category => (
                         <button
                           key={category}

@@ -27,7 +27,7 @@ export default function Dashboard() {
     const getUser = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session?.user) {
           setUser(session.user);
         } else {
@@ -39,7 +39,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-    
+
     getUser();
   }, [router]);
 
@@ -52,7 +52,7 @@ export default function Dashboard() {
             getTransactions(selectedMonth, selectedYear),
             getMonthlySummary(selectedMonth, selectedYear)
           ]);
-          
+
           setTransactions(txData);
           setSummary(summaryData);
         } catch (error) {
@@ -61,7 +61,7 @@ export default function Dashboard() {
           setLoading(false);
         }
       };
-      
+
       loadData();
     }
   }, [user, selectedMonth, selectedYear]);
@@ -71,7 +71,7 @@ export default function Dashboard() {
     try {
       const response = await fetch('/api/transactions/pending-feedback');
       const data = await response.json();
-      
+
       if (data.transaction) {
         setCurrentFeedbackTransaction(data.transaction);
         setFeedbackPopupOpen(true);
@@ -85,13 +85,13 @@ export default function Dashboard() {
   useEffect(() => {
     // Check on initial load
     checkFeedbackRequests();
-    
+
     // Set up polling (every 10 seconds)
     const interval = setInterval(checkFeedbackRequests, 10000);
-    
+
     return () => clearInterval(interval);
   }, []);
-  
+
 
   const handleMonthChange = (e) => {
     setSelectedMonth(parseInt(e.target.value));
@@ -119,7 +119,7 @@ export default function Dashboard() {
           feedback
         }),
       });
-      
+
       setFeedbackPopupOpen(false);
       setCurrentFeedbackTransaction(null);
     } catch (error) {
@@ -182,13 +182,13 @@ export default function Dashboard() {
                 <span className="font-bold text-gray-900 text-lg">Expense Tracker</span>
               </div>
               <div className="ml-6 flex space-x-4">
-                <button 
+                <button
                   onClick={() => setView('summary')}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${view === 'summary' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'}`}
                 >
                   Summary
                 </button>
-                <button 
+                <button
                   onClick={() => setView('transactions')}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${view === 'transactions' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'}`}
                 >
@@ -224,78 +224,78 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Date selector and upload area */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="md:col-span-2 bg-white rounded-lg shadow p-6">
-  <div className="flex flex-col md:flex-row md:items-end justify-between">
-    <div>
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
-        {getMonthName(selectedMonth)} {selectedYear} Overview
-      </h2>
-      <div className="flex space-x-4">
-        <div>
-          <label htmlFor="month" className="block text-sm font-medium text-gray-700 mb-1">Month</label>
-          <select
-            id="month"
-            value={selectedMonth}
-            onChange={handleMonthChange}
-            className="block w-32 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-              <option key={month} value={month}>
-                {getMonthName(month)}
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        <div>
-          <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-          <select
-            id="year"
-            value={selectedYear}
-            onChange={handleYearChange}
-            className="block w-24 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          >
-            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-    </div>
-   
-    <div className="mt-4 md:mt-0 flex space-x-3">
-      <RecalculateButton 
-        month={selectedMonth} 
-        year={selectedYear} 
-        onSuccess={() => {
-          // Refresh data after recalculation
-          setLoading(true);
-          Promise.all([
-            getTransactions(selectedMonth, selectedYear),
-            getMonthlySummary(selectedMonth, selectedYear)
-          ]).then(([txData, summaryData]) => {
-            setTransactions(txData);
-            setSummary(summaryData);
-            setLoading(false);
-          }).catch(error => {
-            console.error("Error refreshing data:", error);
-            setLoading(false);
-          });
-        }} 
-      />
-      
-      <button 
-        onClick={() => window.print()} 
-        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-        </svg>
-        Export Report
-      </button>
-    </div>
-  </div>
-</div>
+          <div className="md:col-span-2 bg-white rounded-lg shadow p-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  {getMonthName(selectedMonth)} {selectedYear} Overview
+                </h2>
+                <div className="flex space-x-4">
+                  <div>
+                    <label htmlFor="month" className="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                    <select
+                      id="month"
+                      value={selectedMonth}
+                      onChange={handleMonthChange}
+                      className="block w-32 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                        <option key={month} value={month}>
+                          {getMonthName(month)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                    <select
+                      id="year"
+                      value={selectedYear}
+                      onChange={handleYearChange}
+                      className="block w-24 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 md:mt-0 flex space-x-3">
+                <RecalculateButton
+                  month={selectedMonth}
+                  year={selectedYear}
+                  onSuccess={() => {
+                    // Refresh data after recalculation
+                    setLoading(true);
+                    Promise.all([
+                      getTransactions(selectedMonth, selectedYear),
+                      getMonthlySummary(selectedMonth, selectedYear)
+                    ]).then(([txData, summaryData]) => {
+                      setTransactions(txData);
+                      setSummary(summaryData);
+                      setLoading(false);
+                    }).catch(error => {
+                      console.error("Error refreshing data:", error);
+                      setLoading(false);
+                    });
+                  }}
+                />
+
+                <button
+                  onClick={() => window.print()}
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Export Report
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload Statements</h2>
@@ -325,7 +325,7 @@ export default function Dashboard() {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
                     <p className="text-sm font-medium text-gray-500">Total Income</p>
                     <p className="mt-2 text-3xl font-semibold text-gray-900">{formatCurrency(Math.abs(summary.total_income || 0))}</p>
@@ -335,7 +335,7 @@ export default function Dashboard() {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
                     <p className="text-sm font-medium text-gray-500">Net Balance</p>
                     <p className="mt-2 text-3xl font-semibold text-gray-900">
@@ -348,13 +348,13 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-              
+
                 {/* Spending Breakdowns */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                   {/* By Category */}
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Spending by Category</h3>
-                    
+
                     {Object.entries(summary.expenses_by_category || {}).length > 0 ? (
                       <div className="space-y-4">
                         {Object.entries(summary.expenses_by_category || {})
@@ -382,11 +382,11 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* By Card */}
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Spending by Card</h3>
-                    
+
                     {Object.entries(summary.expenses_by_card || {}).length > 0 ? (
                       <div className="space-y-4">
                         {Object.entries(summary.expenses_by_card || {})
@@ -394,7 +394,7 @@ export default function Dashboard() {
                           .map(([card, amount]) => {
                             const percentage = Math.round(Math.abs(amount) / (summary.total_expenses || 1) * 100);
                             let cardColor;
-                            
+
                             // Assign colors based on card name
                             if (card.toLowerCase().includes('amex') || card.toLowerCase().includes('american')) {
                               cardColor = 'bg-blue-600';
@@ -407,7 +407,7 @@ export default function Dashboard() {
                             } else {
                               cardColor = 'bg-purple-600';
                             }
-                            
+
                             return (
                               <div key={card}>
                                 <div className="flex justify-between items-center mb-1">
@@ -430,13 +430,13 @@ export default function Dashboard() {
                     )}
                   </div>
                 </div>
-                
+
                 {/* Recent Transactions */}
                 <div className="mt-8 bg-white rounded-lg shadow overflow-hidden">
                   <div className="px-6 py-5 border-b border-gray-200">
                     <h3 className="text-lg font-medium text-gray-900">Recent Transactions</h3>
                   </div>
-                  
+
                   {transactions.length > 0 ? (
                     <div className="max-h-96 overflow-y-auto">
                       <table className="min-w-full divide-y divide-gray-200">
@@ -475,7 +475,7 @@ export default function Dashboard() {
                           ))}
                         </tbody>
                       </table>
-                      
+
                       {transactions.length > 5 && (
                         <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
                           <button
@@ -519,7 +519,7 @@ export default function Dashboard() {
               <h3 className="text-lg font-medium text-gray-900 mb-3 sm:mb-0">
                 All Transactions
               </h3>
-              
+
               <div className="w-full sm:w-64">
                 <input
                   type="text"
@@ -530,7 +530,7 @@ export default function Dashboard() {
                 />
               </div>
             </div>
-            
+
             {filteredTransactions.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
