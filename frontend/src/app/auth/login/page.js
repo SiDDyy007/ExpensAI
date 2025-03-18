@@ -19,13 +19,12 @@ export default function Login() {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (data.session) {
-        // window.location.href = '/dashboard';
         router.push('/dashboard'); // Redirect to dashboard after successful login
       } else {
         setError("Login unsuccessful. Please check your credentials and try again.");
@@ -130,7 +129,7 @@ export default function Login() {
         
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
               Register now
             </Link>

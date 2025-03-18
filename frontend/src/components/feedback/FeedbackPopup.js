@@ -43,7 +43,7 @@ const FeedbackPopup = ({ isOpen, transaction, onSubmit, onClose }) => {
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    This transaction couldn't be automatically categorized. Please provide context or select a category.
+                    This transaction couldn&apos;t be automatically categorized. Please provide context or select a category.
                   </p>
                   
                   <div className="mt-4 bg-gray-50 p-4 rounded-md">

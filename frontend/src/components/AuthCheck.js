@@ -15,9 +15,6 @@ export default function AuthCheck() {
       const { data: { session } } = await supabase.auth.getSession();
       const { data: { user } } = await supabase.auth.getUser();
       
-      // console.log("Current session:", session);
-      // console.log("Current user:", user);
-      
       setSession(session);
       setUser(user);
       setAuthState(session ? 'authenticated' : 'unauthenticated');
@@ -52,7 +49,8 @@ export default function AuthCheck() {
   
   return (
     <div className="text-sm bg-green-100 p-2 rounded">
-      Authenticated as: {user?.email}
+      Authenticated as: {user?.email}<br />
+      Session ID: {session?.access_token}
     </div>
   );
 }

@@ -214,7 +214,7 @@ export async function updateMonthlySummary(month, year, userId = null) {
     }
     
     // Call the stored procedure
-    const { data, error } = await supabase.rpc('manually_update_monthly_summary', {
+    const { error } = await supabase.rpc('manually_update_monthly_summary', {
       user_uuid: userId,
       month_num: month,
       year_num: year
