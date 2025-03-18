@@ -37,6 +37,7 @@ ExpensAI uses a multi-agent architecture where each agent specializes in a speci
    - Gets human feedback for anomalous transactions
 
 3. **Summary Agent**
+   - In - Progress 
    - Generates monthly expense reports
    - Provides spending insights
    - Updates expense sheets
@@ -69,7 +70,7 @@ The system uses two primary storage components:
   - Vector similarity search for pattern recognition
 
 - **Organized Storage**:
-  - Automatic Google Sheets integration
+  - Automatic Database integration
   - Monthly expense tracking
   - Card-wise summaries
   - Historical data maintenance
@@ -86,9 +87,6 @@ The system uses two primary storage components:
 
 1. Python 3.x
 2. Credit card statements in PDF format
-3. Google Cloud account
-4. Pinecone account
-5. Anthropic API key
 
 ### Installation
 
