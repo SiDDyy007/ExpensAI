@@ -5,11 +5,11 @@ ExpensAI is a sophisticated multi-agent system designed to revolutionize how you
 
 # ExpensAI v2 Coming out soon
 **Changes On the Way**
-   - User Friendly UI with Drag N Drop feature 
-   - Complete revamp of UI/UX 
-   - List transactions by Month and Year
-   - Summary tool w/ Chatbot feature to deep dive into insights
-   - More smooth experience overall
+   - User Friendly UI with Drag N Drop feature  #DONE
+   - Complete revamp of UI/UX  #DONE
+   - List transactions by Month and Year #DONE
+   - Summary tool w/ Chatbot feature to deep dive into insights # In - Progress
+   - More smooth experience overall #DONE
 
 
 <p align="center">
