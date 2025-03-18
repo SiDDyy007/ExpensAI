@@ -2,13 +2,14 @@
 
 ExpensAI is a sophisticated multi-agent system designed to revolutionize how you manage and understand your credit card expenses. Using advanced LLM-powered agents, it automatically processes your statements, detects spending patterns, identifies anomalies, and maintains organized records in Google Sheets - all while learning from your feedback to become more personalized over time.
 
+
 # ExpensAI v2 Coming out soon
 **Changes On the Way**
-   - User Friendly UI with Drag N Drop feature 
-   - Complete revamp of UI/UX 
-   - List transactions by Month and Year
-   - Summary tool w/ Chatbot feature to deep dive into insights
-   - More smooth experience overall
+   - User Friendly UI with Drag N Drop feature  #DONE
+   - Complete revamp of UI/UX  #DONE
+   - List transactions by Month and Year #DONE
+   - Summary tool w/ Chatbot feature to deep dive into insights # In - Progress
+   - More smooth experience overall #DONE
 
 
 <p align="center">
@@ -36,6 +37,7 @@ ExpensAI uses a multi-agent architecture where each agent specializes in a speci
    - Gets human feedback for anomalous transactions
 
 3. **Summary Agent**
+   - In - Progress 
    - Generates monthly expense reports
    - Provides spending insights
    - Updates expense sheets
@@ -68,7 +70,7 @@ The system uses two primary storage components:
   - Vector similarity search for pattern recognition
 
 - **Organized Storage**:
-  - Automatic Google Sheets integration
+  - Automatic Database integration
   - Monthly expense tracking
   - Card-wise summaries
   - Historical data maintenance
@@ -85,9 +87,6 @@ The system uses two primary storage components:
 
 1. Python 3.x
 2. Credit card statements in PDF format
-3. Google Cloud account
-4. Pinecone account
-5. Anthropic API key
 
 ### Installation
 
