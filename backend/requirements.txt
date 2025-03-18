@@ -6,6 +6,7 @@ huggingface-hub==0.28.0
 numpy
 oauthlib==3.2.2
 pdfplumber==0.11.5
+PyJWT
 peft==0.14.0
 pgvector==0.3.6
 psutil==5.9.8
