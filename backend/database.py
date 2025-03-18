@@ -1,7 +1,5 @@
-# backend/database.py
 import os
 from supabase import create_client, Client
-# from supabase.lib.client import SupabaseException
 
 from datetime import datetime
 from dotenv import load_dotenv
@@ -25,31 +23,10 @@ async def store_transaction(user_id, transaction_data):
     """
     Store a transaction in the appropriate monthly partition
     """
-    # Extract date from transaction data
-    date_str = transaction_data.get('date')
-    date_str = date_str.replace(",","").replace(" ", "").replace("*", "")  # Remove any spaces for consistent parsing
-    # print("Transaction data received:", transaction_data)
-    if isinstance(date_str, str):
-        # Parse date string to datetime object
-        try:
-            date = datetime.strptime(date_str, '%m/%d/%y')
-        except ValueError:
-            try:
-                date = datetime.strptime(date_str, '%m/%d/%Y')
-            except ValueError:
-                raise ValueError(f"Unsupported date format: {date_str}")
-        except Exception as e:
-            print(f"Error parsing date: {e} Skipping this boiiiiii")
-            return None
-    elif isinstance(date_str, datetime):
-        date = date_str
-    else:
-        raise ValueError("Date is required")
-    
     # Prepare transaction data
     transaction = {
         'user_id': user_id,
-        'date': date.strftime('%Y-%m-%d'),
+        'date': transaction_data.get('date').strftime('%Y-%m-%d'),
         'merchant': transaction_data.get('merchant'),
         'charge': float(transaction_data.get('amount', 0)),
         'card': transaction_data.get('card', 'UNKNOWN'),
@@ -58,7 +35,7 @@ async def store_transaction(user_id, transaction_data):
     }
     
     table_name = 'transactions'
-    print("Inserting transaction into table:", table_name)
+    print("Inserting transaction:", transaction_data)
     # Insert transaction into the appropriate table
     try:
         result = supabase.table(f"{table_name}").insert(transaction).execute()
@@ -212,8 +189,6 @@ async def update_transaction_category(transaction_id, table_name, category, note
             .eq("id", transaction_id) \
             .execute()
         print(result.data)
-    # except SupabaseException as e:
-    #     print(f"Supabase update error: {e}")
     except Exception as e:
         print(f"Unexpected update error: {e}")
     

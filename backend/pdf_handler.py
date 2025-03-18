@@ -1,19 +1,15 @@
-# backend/pdf_handler.py
 import pdfplumber
 import tempfile
 import os
 from fastapi import UploadFile
-# from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 from transformers import BertTokenizerFast, BertForTokenClassification
 import torch
 from database import store_transaction, store_embedding
 from sentence_transformers import SentenceTransformer
-from smolagents import CodeAgent, LiteLLMModel, tool, ToolCallingAgent
-# from parser_tools.statement_parser_tools import parse_amex_statement
+from smolagents import CodeAgent, LiteLLMModel, tool
 import numpy as np
 import time
 import requests
-import uuid
 
 # Load BERT model for NER
 model_path = os.environ.get("PRETRAINED_MODEL_PATH")
@@ -34,9 +30,6 @@ def extract_transactions(text_list : list, tokenizer=tokenizer, model=model):
     """
     Extract transactions from text using the BERT NER model
     """
-    # Split text into manageable chunks for BERT (512 token limit)
-    # chunks = split_text_into_chunks(text, max_length=450)
-    
     transactions = []
     for text in text_list:
         # Process each chunk with BERT & Group entities into potential transactions
@@ -181,8 +174,6 @@ def get_historical_context(note_to_search : str) -> dict:
     if not result:
         print("No similar transactions found")
         return "No similar transactions found"
-    # print(f"Found {len(result)} similar transactions")
-    # print("Similar transactions:", result)
     return result
 
 @tool
@@ -275,9 +266,7 @@ def parse_date(date_str):
     """
     Parse date string to 'YYYY-MM-DD' format
     """
-    # date_str = transaction_data.get('date')
     date_str = date_str.replace(",","").replace(" ", "").replace("*", "")  # Remove any spaces for consistent parsing
-    # print("Transaction data received:", transaction_data)
     if isinstance(date_str, str):
         # Parse date string to datetime object
         try:
@@ -309,29 +298,36 @@ def get_category_and_note(transaction):
     analysis_agent = CodeAgent(
         tools=[get_historical_context, get_human_feedback],
         model=agent_model,
-        add_base_tools=True,
-        additional_authorized_imports=["pandas", "datetime", "numpy"]  # Ensure these libraries are available for the agent
+        # add_base_tools=True,
+        additional_authorized_imports=["pandas", "datetime", "numpy"] 
     )
 
 
     try:
         analysis_prompt = f"""You are a financial analyst assisting in transaction categorization and pattern recognition.  
 
-                            Context:  
-                            Analyze the given transaction based upon your understanding and reasoning to categorize it. 
-                            If relevant, refer to previous user transactions using the `get_historical_context` tool.  
-                            Use your understanding to craft a short note describing the charge type.  
-                            If needed, ask the user for feedback or clarification for future reference.  
+        Context:  
+        Analyze the given transaction based on your understanding and reasoning to categorize it.  
+        Refer to previous user transactions using the `get_historical_context` tool if relevant.  
+        Use your knowledge to craft a short note describing the charge type.  
 
-                            Output Format:  
-                            Return a Python dictionary following this exact structure:  
+        Clarification:  
+        Only ask the user for feedback **if necessary**—specifically, when:  
+        - No relevant historical data is found.  
+        - The charge description is unclear.  
+        - The charge amount is unusual.  
 
-                            {{  
-                                "category": <<One of ['Housing', 'Grocery', 'Fun', 'Investment', 'Miscellaneous']>>,  
-                                "note": <<Concise explanation of the transaction for your future reference>>  
-                            }}  
+        Otherwise, categorize the transaction using logical inference.  
 
-                            Transaction: {transaction}"""
+        Output Format:  
+        Return a Python dictionary in this exact structure:  
+
+        {{  
+            "category": <<One of ['Housing', 'Grocery', 'Fun', 'Investment', 'Utilities', 'Payments', 'Miscellaneous']>>,  
+            "note": <<Concise explanation of the transaction for future reference>>  
+        }}  
+
+        Transaction: {transaction}"""
             
         transaction_analysis = analysis_agent.run(analysis_prompt)
 
@@ -414,9 +410,8 @@ async def process_pdf_and_store(file: UploadFile, user_id: str):
                 # Format transaction for database
                 if not transaction:
                     # Skip incomplete transactions
-                    print(f"Skipping incomplete transaction: {transaction}")
+                    print(f"Skipping incomplete transaction: {extracted_transaction}")
                     continue
-                print(f"Processing transaction: {transaction}")
                 
                 db_transaction = {
                     'date': transaction.get('Date'),
@@ -428,7 +423,8 @@ async def process_pdf_and_store(file: UploadFile, user_id: str):
                 if db_transaction['amount'] == 0:
                     print(f"Skipping transaction with zero amount: {db_transaction}")
                     continue
-
+                
+                print(f"Processing transaction: {db_transaction}")
                 analysis = get_category_and_note(db_transaction)
                 print("Analysis result:", analysis)
                 if analysis and 'category' in analysis and 'note' in analysis:
@@ -443,19 +439,20 @@ async def process_pdf_and_store(file: UploadFile, user_id: str):
                     
                     # Generate note for the transaction (will be updated later by LLM)
                     if not db_transaction.get('note'):
-                        note = f"{transaction.get('Date')} {transaction.get('Merchant')} {transaction.get('Charge')}"
+                        note = f"{transaction.get('Merchant')} {transaction.get('Charge')}"
                     else:
                         note = db_transaction['note']
                     
                     # Create and store embedding
                     print(f"Creating embedding for note: {note}")
                     embedding = create_embedding(note)
-                    # table_name = f"transactions_{result['date'].month:02d}_{result['date'].year}"
-                    table_name = 'transactions_sample'  # For simplicity, using a static table name
+                    table_name = f'{db_transaction['category']}_transactions' 
                     print("Storing embedding now ...")
                     await store_embedding(result['id'], table_name, embedding.tolist(), {
-                        'merchant': transaction.get('Merchant'),
-                        'amount': parse_amount(transaction.get('Charge', '0'))
+                        'merchant': db_transaction.get('merchant'),
+                        'amount': db_transaction.get('amount'),
+                        'category': db_transaction.get('category'),
+                        'note': db_transaction.get('note')
                     })
             except Exception as e:
                 print(f"Error processing transaction {transaction}: {e}")
@@ -493,11 +490,8 @@ def create_embedding(text):
     """
     try:
         # Use sentence transformer to create embedding
-        # print(f"Creating embedding for text: {text}")
         embedding = embedding_model.encode([text])
         print(f"Embedding created for text: {text}")
-        # print(f"Embedding shape: {embedding.shape}")
-        # print(f"Embedding len: {len(embedding)}")
     except Exception as e:
         print(f"Error creating embedding: {e}")
     return embedding[0]

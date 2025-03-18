@@ -3,11 +3,8 @@ from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import jwt
-from datetime import datetime
 import os
 from typing import List
-import tempfile
-import shutil
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 import asyncio
@@ -20,16 +17,9 @@ from database import (
     update_transaction_category
 )
 
-
-from pdf_processor import extract_text_from_pdf
-from bert_model import process_text_with_bert
-from smolagents import CodeAgent, LiteLLMModel, tool
-from parser_tools.statement_parser_tools import parse_amex_statement, parse_zolve_statement, parse_freedom_statement
-# from agents import ExpenseAI
 router = APIRouter()
 
 # Simple in-memory storage for pending feedback requests
-# In a production app, use a database table
 pending_feedback_requests = {}
 feedback_responses = {}
 
@@ -98,7 +88,6 @@ async def get_feedback(transaction_id: str):
     return {"success": True, "feedback": feedback}
 
 app = FastAPI()
-# agent = ExpenseAI()
 
 # Configure CORS
 app.add_middleware(
@@ -125,9 +114,7 @@ async def get_current_user(authorization: str = Header(None)):
     try:
         # Extract token from Bearer token
         token = authorization.split(" ")[1]
-        # print("JWT token:", token)
         payload = jwt.decode(token, JWT_SECRET, audience='authenticated',algorithms=["HS256"])
-        print("Decoded JWT payload:", payload)
         return payload.get("sub")  # sub contains the user_id
     except Exception as e:
         print("Invalid authentication:", str(e))
@@ -137,19 +124,14 @@ async def get_current_user(authorization: str = Header(None)):
 async def upload_files(
     files: List[UploadFile] = File(...),
     authorization: str = Header(None),
-    # user_id: str = Depends(get_current_user)
-    refresh_token = Header(None)  #  refresh tokens
 ):
     """
     Upload and process PDF files
     """
-    print("Processing files")
-
     user_id = await get_current_user(authorization)
-    print("Authenticated user_id:", user_id)
+
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    # session_token = authorization.split(" ")[1]
 
     results = []
     
@@ -246,35 +228,7 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
 
-
-
-# def process_text(text, first_page_text, file_path):
-#     """
-#     Process text using the ExpenseAI agent
-#     """
-#     model = LiteLLMModel(
-#             model_id=os.environ('ANTHROPIC_MODEL_ID'),
-#             api_key=os.environ('ANTHROPIC_API_KEY')
-#     )
-    
-#     extraction_agent = CodeAgent(
-#         tools=[parse_amex_statement, parse_zolve_statement, parse_freedom_statement],
-#         model=model,
-#         add_base_tools=True
-#     )
-
-#     response = extraction_agent.run(
-#                 f"""Determine the card issue from the given first page text: \n
-#                   {first_page_text} and extract all expense from the statement using the appropriate tool. \n
-#                    Here is the file pdf path for the given text: {file_path} \n"""
-#     )
-
-    
-#     return response
-
 @app.get("/")
 async def root():
     return {"message": "PDF Processing API"}
 
-# if __name__ == "__main__":
-#     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
