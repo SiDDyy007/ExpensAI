@@ -1,7 +1,7 @@
 accelerate==1.4.0
 adapters==1.1.0
 anthropic==0.42.0
-fastapi==0.104.1
+fastapi
 huggingface-hub==0.28.0
 numpy
 oauthlib==3.2.2
@@ -15,7 +15,7 @@ pydantic_core==2.27.2
 python-dotenv==1.0.1
 safetensors==0.5.2
 sentence-transformers==3.4.1
-smolagents==1.2.1
+smolagents
 tensorflow==2.18.0
 tokenizers==0.21.0
 torch==2.5.1
